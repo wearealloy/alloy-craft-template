@@ -94,7 +94,10 @@ Go to root folder of project using terminal and run the command ‘gulp build �
 ---
    
 ## Development from existing project:
-```diff - This case is only going to work if the development of the project was initiated using this workflow.```
+
+```diff
+- This case is only going to work if the development of the project was initiated using this workflow.
+```
 This case only applies when you are going to start or continue development from a project that you pulled from         production or staging.
 
 1. Create root folder for project if it doesn’t exist and name it ‘projectname’.’domain’  (eg: uberrito.com).
@@ -108,6 +111,10 @@ This case only applies when you are going to start or continue development from 
 
     You are now ready to start development. Read after steps on the 'Development from scratch’ case for more info.
 
+
+```html
+<span style="color: red;">prueba</span>
+```
 
 ---
 
