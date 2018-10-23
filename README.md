@@ -52,7 +52,7 @@ The task runner has three main commands:
 
 # Development Workflow
 
-This workflow will be divided into cases, each case would follow a specific number of steps and tasks to be run.
+This workflow will be devided into cases, each case would follow a specific number of steps and tasks to be run.
 The case are the following
 
 * Development from scratch
@@ -96,7 +96,7 @@ Go to root folder of project using terminal and run the command â€˜gulp build â€
 ## Development from existing project:
 
 ```diff
-- This case is only going to work if the development of the project was initiated using this workflow.
+- This case only applies if the development of the project was initiated using this workflow.
 ```
 This case only applies when you are going to start or continue development from a project that you pulled from         production or staging.
 
