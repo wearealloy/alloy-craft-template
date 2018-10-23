@@ -114,6 +114,6 @@ This case only applies when you are going to start or continue development from 
 
 ---
 
-As for today 10/23/2018 this workflow is optimized to work with Craft CMS 3.0.27.1 (Solo Version)
+As for 10/23/2018 this workflow is optimized to work with Craft CMS 3.0.27.1 (Solo Version)
 If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.
 
