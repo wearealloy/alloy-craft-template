@@ -4,7 +4,7 @@ The development workflow was built using gulp.js as the main task runner. It wor
 
 The development folder structure has to be the following:
 
-```bash
+```
 ├── cms
 ├── dev
 │   ├── assets
