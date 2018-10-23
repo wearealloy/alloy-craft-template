@@ -4,6 +4,7 @@ The development workflow was built using gulp.js as the main task runner. It wor
 
 The development folder structure has to be the following:
 
+```
 ├── cms
 ├── dev
 │   ├── assets
@@ -23,6 +24,7 @@ The development folder structure has to be the following:
 ├── gulpfile.js
 ├── package-lock.json
 └── package.json
+```
 
 The root folder of the project is going to have two main sub folders ‘cms’ and ‘dev’ (it also includes two main files ‘gulpfile.js’, ‘package.json’). The ‘cms’ folder contains all the files needed for craft 3 to work. This folder won’t be edited unless there has to be a change in a craft related file.
 
@@ -43,7 +45,7 @@ The task runner has three main commands:
 * gulp build —production
     * This command will prepare, compile and compress all the files inside the dev folder and put them inside the cms folder (including raw dev files).
 * gulp buildDev
-    * This command is used to go backwards in the dev process. *It's only going to work if the development of the project was initiated using this workflow. Eg: You started a project using this workflow and it was pushed to production time ago. If you want to make changes on the project you would pull from the server and run this command. After this you will be able to develop as normal.
+    * This command is used to go backwards in the dev process. *It's only going to work if the development of the project was initiated using this workflow.* Eg: You started a project using this workflow and it was pushed to production time ago. If you want to make changes on the project you would pull from the server and run this command. After this you will be able to develop as normal.
 
 
 ---
@@ -59,7 +61,7 @@ The case are the following
 
 ---
 
-##Development from scratch:
+## Development from scratch:
 1. Create root folder for the new project and name it ‘projectname’.’domain’  (eg: uberrito.com). 
 2. Move into the project folder and clone the development workflow structure repo from [here](https://github.com/wearealloy/web-workflow). This will place a few files and the dev and cms folders inside the project root folder.
 3. Download Craft 3 CMS from [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) and place the files inside the cms folder located in the root of the project.
@@ -78,8 +80,8 @@ After this steps you are ready to start development on your new project. All dev
 
 ---
  
-##Pushing to staging or production:
-    Go to root folder of project using terminal and run the command ‘gulp build —production’ (more info in section above)
+## Pushing to staging or production:
+Go to root folder of project using terminal and run the command ‘gulp build —production’ (more info in section above)
 1. Create database in the staging server following this convention names
     1. name: [project]_cmsdb_prod
     2. username: [project]_ee
@@ -91,8 +93,11 @@ After this steps you are ready to start development on your new project. All dev
 
 ---
    
-##Development from existing project:
-    **This case is only going to work if the development of the project was initiated using this workflow.
+## Development from existing project:
+
+```diff
+- This case is only going to work if the development of the project was initiated using this workflow.
+```
 This case only applies when you are going to start or continue development from a project that you pulled from         production or staging.
 
 1. Create root folder for project if it doesn’t exist and name it ‘projectname’.’domain’  (eg: uberrito.com).
