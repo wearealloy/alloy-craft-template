@@ -45,7 +45,7 @@ The task runner has three main commands:
 * gulp build —production
     * This command will prepare, compile and compress all the files inside the dev folder and put them inside the cms folder (including raw dev files).
 * gulp buildDev
-    * This command is used to go backwards in the dev process. ```diff - It's only going to work if the development of the project was initiated using this workflow.``` Eg: You started a project using this workflow and it was pushed to production time ago. If you want to make changes on the project you would pull from the server and run this command. After this you will be able to develop as normal.
+    * This command is used to go backwards in the dev process. *It's only going to work if the development of the project was initiated using this workflow.* Eg: You started a project using this workflow and it was pushed to production time ago. If you want to make changes on the project you would pull from the server and run this command. After this you will be able to develop as normal.
 
 
 ---
@@ -111,10 +111,6 @@ This case only applies when you are going to start or continue development from 
 
     You are now ready to start development. Read after steps on the 'Development from scratch’ case for more info.
 
-
-```html
-<span style="color: red;">prueba</span>
-```
 
 ---
 
