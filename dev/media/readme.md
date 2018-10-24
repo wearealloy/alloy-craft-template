@@ -1,0 +1,1 @@
+*All pictures that the client has access to through tge cms go here*
