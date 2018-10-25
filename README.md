@@ -28,7 +28,7 @@ The development folder structure has to be the following:
 
 The root folder of the project is going to have two main sub folders ‘cms’ and ‘dev’ (it also includes two main files ‘gulpfile.js’, ‘package.json’). The ‘cms’ folder contains all the files needed for craft 3 to work. This folder won’t be edited unless there has to be a change in a craft related file.
 
-The ‘dev’ folder is where all development is going to happen. It has three subfolder: ‘assets’, ‘media’ and ‘templates’ as well as one javascript call ‘entry.js’ (this file is not to be edited unless you know what are doing with gulp).
+The ‘dev’ folder is where all development is going to happen. It has three subfolder: ‘assets’, ‘media’ and ‘templates’ as well as one javascript called ‘entry.js’ (this file is not to be edited unless you know what are doing with gulp).
 
 * assets
     * All scss|sass|css, javascript and images (images that the client won’t be adding or deleting) are going to be added in this folder. 
@@ -53,7 +53,7 @@ The task runner has three main commands:
 # Development Workflow
 
 This workflow will be devided into cases, each case would follow a specific number of steps and tasks to be run.
-The case are the following
+The cases are the following
 
 * Development from scratch
 * Pushing to staging or production
