@@ -82,9 +82,9 @@ After this steps you are ready to start development on your new project. All dev
  
 ## Pushing to staging or production:
 Go to root folder of project using terminal and run the command ‘gulp build —production’ (more info in section above)
-1. Create database in the staging server following this convention names
-    1. name: [project]_cmsdb_prod
-    2. username: [project]_ee
+1. Create database in the server following this convention names and settings
+    1. name: [project]_cmsdb_[prod/staging]
+    2. username: [project]_craft3
     3. collation: utf8_general_ci
 2. Edit ‘.env’ file located at ‘root > cms’
     1. Comment out local environmental variables
