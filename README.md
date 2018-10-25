@@ -76,7 +76,7 @@ After this steps you are ready to start development on your new project. All dev
 * scss|sass|css files go inside 'dev > assets > _scss’, js files go inside 'dev > assets > _js'
 * Any time you want to add  scss|sass|css or js files, they have to be included in the main.scss or main.js files respectively. If not they won’t be taken into consideration when watching or building the files for production.
 * All HTML files go inside the template folder. Twig can be used to write HTML files with no issue.
-* Images can go inside ‘dev > assets > omg’ or ‘dev > media’ depending on the use.
+* Images can go inside ‘dev > assets > img’ or ‘dev > media’ depending on the use.
 
 ---
  
