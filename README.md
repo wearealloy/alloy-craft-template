@@ -68,6 +68,7 @@ The cases are the following
 4. Download Craft 3 CMS from [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) and the its content inside the cms folder located in the root of the project.
 5. Follow Craft 3 installation instructions [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) 
     1. Follow steps [here](https://www.evernote.com/l/AAdH90XLgkdDfKnv7NvFTKlAbUJ_RGApuI4) in case you need help installing the cms web host for the first time.
+    2. Remember to point the vhost to the cms folder***
 6. Locate the file ‘.env.example’ at root > cms > example_files and copy and paste its content in the ‘.env’ file located in root > cms (make sure that the variables between the two files have the same values. Eg: db_user = “admin” in both of them).
 7. Locate the file ‘general.example.php’ at root > cms > example_files and copy and paste its content in the ‘general.php’ file located in 'root > cms > config’.
 
