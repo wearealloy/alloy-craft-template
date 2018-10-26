@@ -1,3 +1,11 @@
+*As for 10/23/2018 this workflow is optimized to work with Craft CMS 3.0.27.1 (Solo Version)
+If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.*
+
+*Foundation version: v6.5.0-rc.4*
+
+---
+
+
 # Development folder structure and gulpfile.js structure
 
 The development workflow was built using gulp.js as the main task runner. It works by using a specific development folder structure to facilitate the copy and paste of files between the development and the production folder structure. 
@@ -69,16 +77,16 @@ The cases are the following
 5. Follow Craft 3 installation instructions [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) 
     1. Follow steps [here](https://www.evernote.com/l/AAdH90XLgkdDfKnv7NvFTKlAbUJ_RGApuI4) in case you need help installing the cms web host for the first time.
     2. Remember to point the vhost to the cms folder***
-6. Locate the file ‘.env.example’ at root > cms > example_files and copy and paste its content in the ‘.env’ file located in root > cms (make sure that the variables between the two files have the same values. Eg: db_user = “admin” in both of them).
-7. Locate the file ‘general.example.php’ at root > cms > example_files and copy and paste its content in the ‘general.php’ file located in 'root > cms > config’.
+6. Locate the file ‘.env.example’ at ```root/cms/example_files/``` and copy and paste its content in the ‘.env’ file located in ```root/cms/``` (make sure that the variables between the two files have the same values. Eg: db_user = “admin” in both of them).
+7. Locate the file ‘general.example.php’ at ```root/cms/example_files``` and copy and paste its content in the ‘general.php’ file located in ```root/cms/config/```.
 
 After this steps you are ready to start development on your new project. All development will happen in the dev folder. Do not delete any files that came within the folder.
 
 * To start development go to the root folder using the terminal and type the command: ```gulp watch``` (read section above for more info on this command)
-* scss|sass|css files go inside 'dev > assets > _scss’, js files go inside 'dev > assets > _js'
+* scss|sass|css files go inside ```dev/assets/_scss```, js files go inside ```dev/assets/_js```
 * Any time you want to add  scss|sass|css or js files, they have to be included in the main.scss or main.js files respectively. If not they won’t be taken into consideration when watching or building the files for production.
-* All HTML files go inside the template folder. Twig can be used to write HTML files with no issue.
-* Images can go inside ‘dev > assets > img’ or ‘dev > media’ depending on the use.
+* All HTML files go inside the ```template/``` folder. Twig can be used to write HTML files with no issue.
+* Images can go inside ```dev/assets/img/``` or ```dev/media``` depending on the use.
 
 ---
  
@@ -107,16 +115,11 @@ This case only applies when you are going to start or continue development from 
 2. Export db from server and import it locally
 3. Clone the [web-workflow](https://github.com/wearealloy/web-workflow) repo and place it inside the root folder.
 4. Download all files from staging or production server and place them inside the cms folder located in the root of the project.
-5. Edit ‘.env’ file located at ‘root > cms’
+5. Edit ‘.env’ file located at ```root/cms/```
     1. Comment out staging or production environmental variables
     2. Add local environmental variables (db user, db password, db name)
 6. Run the command ```gulp buildDev``` from the root of the project.
 
     You are now ready to start development. Read after steps on the 'Development from scratch’ case for more info.
 
-
----
-
-As for 10/23/2018 this workflow is optimized to work with Craft CMS 3.0.27.1 (Solo Version)
-If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.
 
