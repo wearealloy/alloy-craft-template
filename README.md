@@ -91,6 +91,7 @@ Go to root folder of project using terminal and run the command ```gulp build â€
     1. Comment out local environmental variables
     2. Add staging environmental variables (db user, db password, db name)
 3. Move entire cms folder inside project folder to server. Do not include dev folder.
+4. Once on the server, find the dev_files folder and change permissions to '644'.
 
 ---
    
