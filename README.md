@@ -14,21 +14,29 @@ The development folder structure has to be the following:
 
 ```
 ├── cms
+│   └── example_files
+│       └── general.example.php
 ├── dev
-│   ├── assets
-│   │   ├── _js
-│   │   │   ├── main.js
-│   │   │   └── vendors
-│   │   ├── _scss
-│   │   │   ├── components
-│   │   │   ├── main.scss
-│   │   │   └── vendors
-│   │   ├── fonts
-│   │   └── img
-│   ├── entry.js
-│   ├── media
-│   └── templates
-│       └── layouts
+│   ├── assets
+│   │   ├── _js
+│   │   │   ├── main.js
+│   │   │   └── vendor
+│   │   │       ├── foundation.min.js
+│   │   │       ├── jquery.js
+│   │   │       ├── modernizr-custom.js
+│   │   │       └── what-input.js
+│   │   ├── _scss
+│   │   │   ├── components
+│   │   │   │   └── _readme.md
+│   │   │   ├── main.scss
+│   │   │   └── vendor
+│   │   │       └── foundation.min.css
+│   │   ├── fonts
+│   │   └── img
+│   ├── entry.js
+│   ├── media
+│   └── templates
+│       └── index.html
 ├── gulpfile.js
 ├── package-lock.json
 └── package.json
