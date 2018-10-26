@@ -64,7 +64,7 @@ The cases are the following
 ## Development from scratch:
 1. Create root folder for the new project and name it ‘projectname’.’domain’  (eg: uberrito.com). 
 2. Move into the project folder and clone the development workflow structure repo from [here](https://github.com/wearealloy/web-workflow). This will create a folder called 'web-workflow' inside the root folder. Extract all its content to the root folder with the exception of the git folder, then delete the 'web-workflow' folder.
-3. Run the command ```npm install``` from the root directory of the project.
+3. Run the command ```npm install``` from the root directory of the project. [Node.js required](https://nodejs.org/en/)
 4. Download Craft 3 CMS from [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) and the its content inside the cms folder located in the root of the project.
 5. Follow Craft 3 installation instructions [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) 
     1. Follow steps [here](https://www.evernote.com/l/AAdH90XLgkdDfKnv7NvFTKlAbUJ_RGApuI4) in case you need help installing the cms web host for the first time.
