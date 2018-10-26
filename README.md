@@ -90,7 +90,7 @@ Go to root folder of project using terminal and run the command ```gulp build �
 2. Edit ‘.env’ file located at ‘root > cms’
     1. Comment out local environmental variables
     2. Add staging environmental variables (db user, db password, db name)
-3. Move entire cms folder inside project folder to server.
+3. Move entire cms folder inside project folder to server. Do not include dev folder.
 
 ---
    
