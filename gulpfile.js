@@ -13,6 +13,14 @@ var pathToCms = {
   devFiles: 'cms/dev_files'
 }
 
+var jsOrder = [
+  'vendor/jquery.js',
+  'vendor/modernizr-custom.js',  
+  'vendor/foundation.min.js',
+  'vendor/slick.js',
+  '*.js'
+];
+
 
 //*************************************
 
@@ -35,15 +43,19 @@ var cleanCSS = require('gulp-clean-css');
 var sourcemaps = require('gulp-sourcemaps');
 var del = require('del');
 
+//*************************************
 
 gulp.task('scripts', function(){
-	return gulp.src('dev/assets/_js/main.js')
-		.pipe(babel({presets: ['@babel/env']}))
+  return gulp.src('dev/assets/_js/**/*.js')
+    .pipe(plumber())
+    .pipe(babel({presets: ['@babel/env']}))
+    .pipe(order(jsOrder))
+    .pipe(concat('main.js'))
     .pipe((mode.production(uglify())))
-		.pipe(gulp.dest(pathToCms.js))
-		.pipe(browserSync.reload({
-	      stream: true
-	    }))
+    .pipe(gulp.dest(pathToCms.js))
+    .pipe(browserSync.reload({
+        stream: true
+      }))
 })
 
 
@@ -128,15 +140,16 @@ gulp.task('copyCMSFiles', function(){
 
 // Taks to run on command line
 
-gulp.task('watch', ['clean', 'browserSync', 'sass', 'scripts', 'img', 'media', 'templates'], function(){
-	gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
-	gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
-	gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
-	gulp.watch('dev/media/**/*.+(png|jpg|gif|svg)', ['media']);
-	gulp.watch('dev/templates/**/*.html', ['templates']);
+gulp.task('watch', ['clean', 'sass', 'scripts', 'img', 'media', 'copyFonts', 'templates', 'browserSync'], function(){
+  gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
+  gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
+  gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
+  gulp.watch('dev/assets/fonts/**/*.+(eot|svg|ttf|woff)')
+  gulp.watch('dev/media/**/*.+(png|jpg|gif|svg)', ['media']);
+  gulp.watch('dev/templates/**/*.html', ['templates']);
 });
 
-gulp.task('build', ['clean', 'sass', 'scripts', 'img', 'media', 'copyHTML', 'copyDevFiles']);
+gulp.task('build', ['clean', 'sass', 'scripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
 
 gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
 
