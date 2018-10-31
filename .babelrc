@@ -1,4 +1,4 @@
 {
   "presets": ["@babel/env"],
-  "compact": true
+  "compact": false
 }

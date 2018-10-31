@@ -1,3 +1,5 @@
+'use strict';
+
 //**************************************
 
 // Destination path variables.
@@ -13,23 +15,28 @@ var pathToCms = {
   devFiles: 'cms/dev_files'
 }
 
-var jsOrder = [
-  'vendor/jquery.js',
-  'vendor/modernizr-custom.js',  
-  'vendor/foundation.min.js',
-  'vendor/slick.js',
-  '*.js'
-];
+ // order in which scripts must be included
+
+// var jsOrder = [
+//   'vendor/jquery.js',
+//   'vendor/modernizr-custom.js',  
+//   'vendor/foundation.min.js',
+//   'vendor/slick.js',
+//   '*.js'
+// ];
 
 
 //*************************************
 
 var gulp = require('gulp');
 var sass = require('gulp-sass');
+var plumber = require('gulp-plumber');
 var autoprefixer = require('gulp-autoprefixer');
 var twig = require('gulp-twig');
 var browserSync = require('browser-sync').create();
-var babel = require('gulp-babel');
+// var babel = require('gulp-babel');
+// var order = require("gulp-order");
+var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var imagemin = require('gulp-imagemin');
 var imageminMozjpeg = require('imagemin-mozjpeg');
@@ -42,20 +49,55 @@ var mode = require('gulp-mode')({
 var cleanCSS = require('gulp-clean-css');
 var sourcemaps = require('gulp-sourcemaps');
 var del = require('del');
+const webpack2 = require('webpack');
+const webpackStream = require('webpack-stream');
+const named = require('vinyl-named');
+// const webpackConfig = require('./webpack.config.js');
 
 //*************************************
 
-gulp.task('scripts', function(){
-  return gulp.src('dev/assets/_js/**/*.js')
+
+// gulp.task('scripts', function(){
+//  return gulp.src('dev/assets/_js/**/*.js')
+//     .pipe(plumber())
+//    .pipe(babel({presets: ['@babel/env']}))
+//     .pipe(order(jsOrder))
+//     .pipe(concat('main.js'))
+//     .pipe((mode.production(uglify())))
+//    .pipe(gulp.dest(pathToCms.js))
+//    .pipe(browserSync.reload({
+//        stream: true
+//      }))
+// })
+
+let webpackConfig = {
+  mode: 'development',
+  module: {
+    rules: [
+      {
+        test: /.js$/,
+        use: [
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      }
+    ]
+  }
+}
+
+gulp.task('scripts', function() {
+  return gulp.src('dev/assets/_js/main.js')
     .pipe(plumber())
-    .pipe(babel({presets: ['@babel/env']}))
-    .pipe(order(jsOrder))
-    .pipe(concat('main.js'))
-    .pipe((mode.production(uglify())))
+    .pipe(named())
+    .pipe(sourcemaps.init())
+      .pipe(webpackStream(webpackConfig, webpack2))
+      .pipe((mode.production(uglify())))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest(pathToCms.js))
     .pipe(browserSync.reload({
-        stream: true
-      }))
+      stream: true
+    }))
 })
 
 
@@ -64,8 +106,8 @@ gulp.task('templates', function() {
         .pipe(twig())
         .pipe(gulp.dest(pathToCms.html)) // output the rendered HTML files to the "dist" directory
         .pipe(browserSync.reload({
-	      stream: true
-	    }))
+        stream: true
+      }))
 });
 
 gulp.task('copyHTML', function(){
@@ -75,6 +117,7 @@ gulp.task('copyHTML', function(){
 
 gulp.task('sass', function(){
   return gulp.src('dev/assets/_scss/main.scss')
+    .pipe(plumber())
     .pipe(sourcemaps.init())
       .pipe(sass()) // Using gulp-sass
       .pipe(autoprefixer())
@@ -96,8 +139,8 @@ gulp.task('img', () =>
         .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
         .pipe(gulp.dest(pathToCms.img))
         .pipe(browserSync.reload({
-	      stream: true
-	    }))
+        stream: true
+      }))
 );
 
 gulp.task('media', () =>
@@ -105,8 +148,8 @@ gulp.task('media', () =>
         .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
         .pipe(gulp.dest(pathToCms.media))
         .pipe(browserSync.reload({
-	      stream: true
-	    }))
+        stream: true
+      }))
 );
 
 gulp.task('clean', function(){
