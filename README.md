@@ -104,10 +104,10 @@ Go to root folder of project using terminal and run the command ```npm build``` 
     1. name: [project]_cmsdb_[prod/staging]
     2. username: [project]_craft3
     3. collation: utf8_general_ci
-2. Edit ‘.env’ file located at ‘root > cms’
+2. Move entire cms folder inside project folder to server.
+3. Edit ‘.env’ file located at ‘root > cms’
     1. Comment out local environmental variables
     2. Add staging environmental variables (db user, db password, db name)
-3. Move entire cms folder inside project folder to server. Do not include dev folder.
 4. Once on the server, find the dev_files folder and change permissions to '644'.
 
 ---
