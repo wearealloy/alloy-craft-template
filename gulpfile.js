@@ -2,18 +2,24 @@
 
 //**************************************
 
-// Destination path variables.
-  
-var pathToCms = {
-  js: 'cms/web/assets/js',
-  css: 'cms/web/assets/css',
-  media: 'cms/web/media',
-  fonts: 'cms/web/assets/fonts',
-  img: 'cms/web/assets/img',
-  html: 'cms/templates/',
-  indexHtml: './templates/index.html', // this path has to be in relation to the index.html file found in the cms folder
-  devFiles: 'cms/dev_files'
-}
+// VARIABLES 
+
+  // Destination path variables.
+    
+  var pathToCms = {
+    js: 'cms/web/assets/js',
+    css: 'cms/web/assets/css',
+    media: 'cms/web/media',
+    fonts: 'cms/web/assets/fonts',
+    img: 'cms/web/assets/img',
+    html: 'cms/templates/',
+    indexHtml: './templates/index.html', // this path has to be in relation to the index.html file found in the cms folder
+    devFiles: 'cms/dev_files'
+  }
+
+  //global variables
+
+  var vHost = 'vhost url here'; //eg: craft3.tag.test
 
 //*************************************
 
@@ -147,8 +153,8 @@ gulp.task('browserSync', function() {
   browserSync.init({
       // baseDir: 'cms',
       // index: pathToCms.indexHtml
-      proxy: 'vhost path here',
-      host: 'vhost path here'
+      proxy: vHost,
+      host: vHost
   });
 });
 

@@ -80,13 +80,14 @@ The cases are the following
 ## Development from scratch:
 1. Create root folder for the new project and name it ‘projectname’.’domain’  (eg: uberrito.com). 
 2. Move into the project folder and clone the development workflow structure repo from [here](https://github.com/wearealloy/web-workflow). This will create a folder called 'web-workflow' inside the root folder. Extract all its content to the root folder with the exception of the git folder, then delete the 'web-workflow' folder.
-3. Run the command ```npm install``` from the root directory of the project. [Node.js required](https://nodejs.org/en/)
+3. Run the command ```npm install``` from the root directory of the project. [Node.js](https://nodejs.org/en/) required.
 4. Download Craft 3 CMS from [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) and extract its content inside the cms folder located in the root of the project.
 5. Locate the file ‘.env.example’ at ```root/cms/example_files/``` and copy and paste its content in the ‘.env’ file located in ```root/cms/```.
 6. Locate the file ‘general.example.php’ at ```root/cms/example_files``` and copy and paste its content in the ‘general.php’ file located in ```root/cms/config/```.
 7. Follow Craft 3 installation instructions [here](https://docs.craftcms.com/v3/installation.html#step-1-download-craft) 
     1. Follow steps [here](https://www.evernote.com/l/AAdH90XLgkdDfKnv7NvFTKlAbUJ_RGApuI4) in case you need help installing the cms web host for the first time.
     2. Remember to point the vhost to ```root/cms/web/``` folder***
+8. Open ```gulpfile.js``` located in the root folder of the project, locate the variable ```vHost``` on line 22. Edit it and add the vHost url you are using to run the local environment (step 7.1).
 
 After this steps you are ready to start development on your new project. All development will happen in the dev folder. Do not delete any files that came within the folder.
 
