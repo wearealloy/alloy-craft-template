@@ -15,17 +15,6 @@ var pathToCms = {
   devFiles: 'cms/dev_files'
 }
 
- // order in which scripts must be included
-
-// var jsOrder = [
-//   'vendor/jquery.js',
-//   'vendor/modernizr-custom.js',  
-//   'vendor/foundation.min.js',
-//   'vendor/slick.js',
-//   '*.js'
-// ];
-
-
 //*************************************
 
 var gulp = require('gulp');
@@ -98,6 +87,11 @@ gulp.task('scripts', function() {
     .pipe(browserSync.reload({
       stream: true
     }))
+})
+
+gulp.task('copyVendorScripts', function() {
+  return gulp.src('dev/assets/_js/vendor/**/*.js')
+  .pipe(gulp.dest(pathToCms.js + '/vendor'))
 })
 
 
@@ -183,7 +177,7 @@ gulp.task('copyCMSFiles', function(){
 
 // Taks to run on command line
 
-gulp.task('watch', ['clean', 'sass', 'scripts', 'img', 'media', 'copyFonts', 'templates', 'browserSync'], function(){
+gulp.task('watch', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyFonts', 'templates', 'browserSync'], function(){
   gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
   gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
@@ -192,7 +186,7 @@ gulp.task('watch', ['clean', 'sass', 'scripts', 'img', 'media', 'copyFonts', 'te
   gulp.watch('dev/templates/**/*.html', ['templates']);
 });
 
-gulp.task('build', ['clean', 'sass', 'scripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
+gulp.task('build', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
 
 gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
 
