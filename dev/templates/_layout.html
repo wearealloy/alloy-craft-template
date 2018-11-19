@@ -20,6 +20,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<link rel="stylesheet" {%if siteUrl %} href="{{alias('@assetBasePath')}}/css/main.css" {% else %} href="../web/assets/css/main.css"{% endif %}>
+
+	<script {%if siteUrl %} src="{{alias('@assetBasePath')}}/js/vendor/modernizr-custom.js" {% else %} src="../web/assets/js/vendor/modernizr-custom.js"{% endif %}></script>
 </head>
 <body>
 	{% block content %}
