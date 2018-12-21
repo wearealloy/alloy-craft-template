@@ -58,9 +58,9 @@ The task runner has three main commands:
 
 * ```npm start```
     * This command will start the development environment by creating a local server and watching changes in any file inside the dev folder.
-* ```npm build```
+* ```npm run build```
     * This command will prepare, compile and compress all the files inside the dev folder and put them inside the cms folder (including raw dev files).
-* ```npm buildDev```
+* ```npm run buildDev```
     * This command is used to go backwards in the dev process. It copies files located in dev_files folder and places them inside the dev folder to start development. *This command will only work if the development of the project was initiated using this workflow.* Eg: You started a project using this workflow and it was pushed to production time ago. If you want to make changes on the project you would pull from the server and run this command. After this you will be able to develop as normal.
 
 
@@ -95,12 +95,14 @@ After this steps you are ready to start development on your new project. All dev
 * scss|sass|css files go inside ```dev/assets/_scss```, js files go inside ```dev/assets/_js```
 * Any time you want to add  scss|sass|css or js files, they have to be included in the main.scss or main.js files respectively. If not they won’t be taken into consideration when watching or building the files for production.
 * All HTML files go inside the ```template/``` folder. Twig can be used to write HTML files with no issue.
-* Images can go inside ```dev/assets/img/``` or ```dev/media``` depending on the use.
+* Images go inside ```dev/assets/img/``` or ```dev/media``` depending on the use.
+
+* Since craft uses the ```web/``` directory as entry point, all references in html, css and js files need be relative to that directory.
 
 ---
  
 ## Pushing to staging or production:
-Go to root folder of project using terminal and run the command ```npm build``` (more info in section above)
+Go to root folder of project using terminal and run the command ```npm run build``` (more info in section above)
 1. Create database in the server following this convention names and settings
     1. name: [project]_cmsdb_[prod/staging]
     2. username: [project]_craft3
@@ -127,7 +129,7 @@ This case only applies when you are going to start or continue development from 
 5. Edit ‘.env’ file located at ```root/cms/```
     1. Comment out staging or production environmental variables
     2. Add local environmental variables (db user, db password, db name)
-6. Run the command ```npm buildDev``` from the root of the project.
+6. Run the command ```npm run buildDev``` from the root of the project.
 
     You are now ready to start development. Read after steps on the 'Development from scratch’ case for more info.
 

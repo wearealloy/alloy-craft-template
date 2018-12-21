@@ -1,10 +1,10 @@
 {
   "name": "gulp_workflow",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "gulp watch",
+    "start": "gulp",
     "build": "gulp build --production",
     "buildDev": "gulp buildDev"
   },
@@ -14,7 +14,6 @@
     "last 2 versions"
   ],
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.1.2",

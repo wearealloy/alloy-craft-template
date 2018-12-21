@@ -153,8 +153,7 @@ gulp.task('browserSync', function() {
   browserSync.init({
       // baseDir: 'cms',
       // index: pathToCms.indexHtml
-      proxy: vHost,
-      host: vHost
+      proxy: vHost
   });
 });
 
@@ -172,7 +171,7 @@ gulp.task('copyCMSFiles', function(){
 
 // Taks to run on command line
 
-gulp.task('watch', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'browserSync'], function(){
+gulp.task('default', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'browserSync'], function(){
   gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
   gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
