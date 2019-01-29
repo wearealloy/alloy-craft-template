@@ -9,12 +9,11 @@
     "buildDev": "gulp buildDev"
   },
   "author": "JSosa Alloy <jsosa@wearealloy.com>",
-  "license": "MIT",
+  "license": "ISC",
   "browserslist": [
     "last 2 versions"
   ],
   "keywords": [],
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
@@ -45,6 +44,7 @@
   },
   "dependencies": {
     "foundation-sites": "^6.5.0",
+    "gulp-chmod": "^2.0.0",
     "jquery": "^3.3.1",
     "slick-carousel": "^1.8.1",
     "what-input": "^5.1.2"
