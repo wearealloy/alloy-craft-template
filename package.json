@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "gulp",
-    "build": "gulp build --production",
-    "buildDev": "gulp buildDev"
+    "start": "gulp watch",
+    "build": "gulp build --production"
   },
   "author": "JSosa Alloy <jsosa@wearealloy.com>",
   "license": "ISC",
