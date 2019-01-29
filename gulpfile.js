@@ -19,11 +19,12 @@
 
   //global variables
 
-  var vHost = 'vhost url here'; //eg: craft3.tag.test
+  var vHost = 'vhost address';
 
 //*************************************
 
 var gulp = require('gulp');
+const chmod = require('gulp-chmod');
 var sass = require('gulp-sass');
 var plumber = require('gulp-plumber');
 var autoprefixer = require('gulp-autoprefixer');
@@ -81,9 +82,9 @@ gulp.task('scripts', function() {
     }))
 })
 
-gulp.task('copyVendorScripts', function() {
-  return gulp.src('dev/assets/_js/vendor/**/*.js')
-  .pipe(gulp.dest(pathToCms.js + '/vendor'))
+gulp.task('copyScripts', function() {
+  return gulp.src('dev/assets/_js/scripts/**/*.js')
+  .pipe(gulp.dest(pathToCms.js + '/scripts'))
 })
 
 
@@ -126,6 +127,7 @@ gulp.task('copyFonts', function(){
 gulp.task('img', () =>
     gulp.src('dev/assets/img/**/*.+(png|jpg|gif|svg)')
         .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
+        // .pipe(chmod(777))
         .pipe(gulp.dest(pathToCms.img))
         .pipe(browserSync.reload({
         stream: true
@@ -135,6 +137,7 @@ gulp.task('img', () =>
 gulp.task('media', () =>
     gulp.src('dev/media/**/*.+(png|jpg|gif|svg)')
         .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
+        // .pipe(chmod(777))
         .pipe(gulp.dest(pathToCms.media))
         .pipe(browserSync.reload({
         stream: true
@@ -154,6 +157,7 @@ gulp.task('browserSync', function() {
       // baseDir: 'cms',
       // index: pathToCms.indexHtml
       proxy: vHost
+      // host: vHost
   });
 });
 
@@ -171,7 +175,7 @@ gulp.task('copyCMSFiles', function(){
 
 // Taks to run on command line
 
-gulp.task('default', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'browserSync'], function(){
+gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'browserSync'], function(){
   gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
   gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
@@ -180,7 +184,7 @@ gulp.task('default', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'm
   gulp.watch('dev/templates/**/*.html', ['copyHTML']);
 });
 
-gulp.task('build', ['clean', 'sass', 'scripts', 'copyVendorScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
+gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
 
 gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
 
