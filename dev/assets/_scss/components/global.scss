@@ -1,62 +1,268 @@
 /****************** GLOBAL *********************/
 
-$fontFamilySerif: serif;
-$fontFamilySans: sans-serif;
+// $fontFamilySerif: matrix-ii,
+// serif; 
 
+// $fontFamilySans-regular: ff-good-web-pro-condensed,
+// sans-serif; 
 
-// colors
-$mainFontColor: #363636;
+// $fontFamilySansDin: Sofia Pro,
+// sans-serif; 
 
+// color palette
+$mainFontColor: #4e4744;
+
+// spacing & containers
+$sectionPadding: 96px;
+$sectionPadding-medium: 60px;
+$sectionPadding-small: 30px;
+$sectionPaddingTop: 130px;
+$sectionPaddingTop-medium: 65px;
+$sectionPaddingTop-small: 30px;
+
+.wrapper-all {
+    position: relative;
+    padding: 0 $sectionPadding;
+    width: 100%;
+    @media screen and (max-width: 1439px) and (min-width: 1280px) {
+        padding: 0 $sectionPadding-medium;
+    }
+    @media screen and (max-width: 1279px) and (min-width: 992px) {
+        padding: 0 $sectionPadding-medium;
+    }
+    @media screen and (max-width: 991px) and (min-width: 0) {
+        padding: 0;
+    }
+}
+
+.wrapper-left {
+    position: relative;
+    padding: 0 0 0 $sectionPadding;
+    width: 100%;
+    @media screen and (max-width: 1439px) and (min-width: 1280px) {
+        padding: 0 0 0 $sectionPadding-medium;
+    }
+    @media screen and (max-width: 1279px) and (min-width: 992px) {
+        padding: 0 0 0 $sectionPadding-medium;
+    }
+    @media screen and (max-width: 991px) and (min-width: 0) {
+        padding: 0;
+    }
+}
+
+.wrapper-right {
+    position: relative;
+    padding: 0 $sectionPadding 0 0;
+    width: 100%;
+    @media screen and (max-width: 1439px) and (min-width: 1280px) {
+        padding: 0 $sectionPadding-medium 0 0;
+    }
+    @media screen and (max-width: 1279px) and (min-width: 992px) {
+        padding: 0 $sectionPadding-medium 0 0;
+    }
+    @media screen and (max-width: 991px) and (min-width: 0) {
+        padding: 0;
+    }
+}
+
+.container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    @media (min-width: 576px) {
+        max-width: 768px;
+    }
+    @media (min-width: 992px) {
+        max-width: 1280px;
+    }
+    @media (min-width: 1200px) {
+        max-width: 1354px;
+    }
+    @media screen and (max-width: 1591px) and (min-width: 768px) {
+        padding-left: $sectionPadding-small !important;
+        padding-right: $sectionPadding-small !important;
+    }
+    @media screen and (max-width: 767px) and (min-width: 374px) {
+        padding-right: $sectionPadding-small !important;
+        padding-left: $sectionPadding-small !important;
+    }
+}
+
+.container-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    &.flex-column {
+        flex-direction: column;
+    }
+    &.flex-baseline {
+        align-content: baseline;
+    }
+    &.flex-two {
+        >* {
+            flex: 0 0 50%;
+            @media (max-width: 640px) {
+                flex: 0 0 100%;
+            }
+        }
+    }
+    &.flex-three {
+        >* {
+            flex: 0 0 33%;
+            @media (max-width: 640px) {
+                flex: 0 0 100%;
+            }
+        }
+    }
+}
+
+.container-flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionPadding {
+    padding: 100px 0;
+    @media (max-width: 768px) {
+        padding: $sectionPaddingTop-medium 0;
+    }
+    @media (max-width: 640px) {
+        padding: $sectionPaddingTop-medium 0;
+    }
+}
+
+.sectionPaddingTop {
+    padding-top: 100px;
+    @media (max-width: 768px) {
+        padding-top: $sectionPaddingTop-medium;
+    }
+    @media (max-width: 640px) {
+        padding-top: $sectionPaddingTop-medium;
+    }
+}
+
+.sectionMarginTop {
+    margin-top: $sectionPaddingTop;
+    @media (max-width: 768px) {
+        margin-top: $sectionPaddingTop-medium;
+    }
+    @media (max-width: 640px) {
+        margin-top: $sectionPaddingTop-medium;
+    }
+}
 
 // TYPOGRAPHY
-
-html{
-	overflow-x:hidden;
-	font-size:16px;
+html {
+    overflow-x: hidden;
+    font-size: 19px; //base
+    // font-family: *** ;
+    @media screen {}
 }
 
-h1{
-	font-size: 3rem;
-	@media (max-width: 1024px) {
-		font-size: 2.5rem;
-	}
-	@media (max-width: 640px) {
-		font-size: 2rem;
-	}
-	@media (max-width: 320px) {
-		font-size: 2em;
-	}
-}
-h2{
-	font-size: 2.25rem;
-	@media (max-width: 1024px) {
-		font-size: 2rem;
-	}
-	@media (max-width: 640px) {
-		font-size: 1.625rem;
-	}
-}
-h3{
-	font-size: 1.75rem;
-	@media (max-width: 1024px) {
-		font-size: 1.5rem;
-	}
-	@media (max-width: 640px) {
-		font-size: 1.375rem;
-	}
-}
-h4{
-	font-size: 1.12rem;
+h1 {
+    font-size: 3rem;
+    @media (max-width: 1024px) {
+        font-size: 2.5rem;
+    }
+    @media (max-width: 640px) {
+        font-size: 2rem;
+    }
+    @media (max-width: 320px) {
+        font-size: 2em;
+    }
 }
 
+h2 {
+    font-size: 2.25rem;
+    @media (max-width: 1024px) {
+        font-size: 2rem;
+    }
+    @media (max-width: 640px) {
+        font-size: 1.625rem;
+    }
+}
+
+h3 {
+    font-size: 1.75rem;
+    @media (max-width: 1024px) {
+        font-size: 1.5rem;
+    }
+    @media (max-width: 640px) {
+        font-size: 1.375rem;
+    }
+}
+
+h4 {
+    font-size: 1.12rem;
+}
+
+p {
+    font-size: 1.0526rem;
+    line-height: 1.9;
+    margin-bottom: 20px;
+    @media (max-width: 1024px) {
+        line-height: 1.6;
+    }
+}
 
 // ***********
-
-body{
-	box-sizing: border-box;
-	padding: 0;
-	margin: 0;
-	color: $mainFontColor;
-	font-family: $fontFamilySerif;
+body {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    color: $mainFontColor;
+    // font-family: *** ;
 }
 
+// custom clases
+.header {
+    font-family: $fontFamilySerif;
+    font-size: 2.73rem;
+    // color: $wineRed;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    @media (max-width: 1024px) {
+        font-size: 2.1rem;
+        line-height: 1;
+    }
+}
+
+.sub-header {
+    // font-family: *** ;
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 3px;
+    // color: *** ;
+    margin-bottom: 16px;
+}
+
+.main-button {
+    // font-family: *** ;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.3rem;
+    // color: *** ;
+    // background-color: *** ;
+    padding: 0.8rem 1.5rem 0.85rem 1.5rem;
+    border-radius: 8px;
+    margin: 10px 0;
+    display: inline-block;
+    transition: background-color 0.3s linear;
+    &:hover {
+        // color: *** ;
+        // background-color: *** ;
+    }
+    &:active {
+        // color: *** ;
+        // background-color: *** ;
+    }
+    &:focus {
+        // color: *** ;
+        // background-color: *** ;
+    }
+    @media (max-width: 1024px) {
+        font-size: 1.3rem;
+    }
+}
