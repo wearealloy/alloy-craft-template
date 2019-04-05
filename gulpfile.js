@@ -135,7 +135,7 @@ gulp.task('img', () =>
 );
 
 gulp.task('media', () =>
-    gulp.src('dev/media/**/*.+(png|jpg|gif|svg)')
+    gulp.src('dev/media/**/*')
         .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
         // .pipe(chmod(777))
         .pipe(gulp.dest(pathToCms.media))
