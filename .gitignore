@@ -1,5 +1,6 @@
 node_modules
 .DS_Store
+cms/.env
 cms/templates/*
 cms/web/assets/*
 cms/web/media/*
