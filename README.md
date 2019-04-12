@@ -77,7 +77,8 @@ The cases are the following
 ## Development from scratch for Craft 3 project:
 
 1. Run the command `alloy new` where you want to create the new project,  select the project type (craft or simple), then type the name of the project with no spaces.
-2. Follow Craft 3 installation instructions **steps 2 to steps 5** from [here](https://docs.craftcms.com/v3/installation.html#directory-structure). Summary of craft steps:
+2. Rename `.env.example` file to `.env`
+3. Follow Craft 3 installation instructions **steps 2 to steps 5** from [here](https://docs.craftcms.com/v3/installation.html#directory-structure). Summary of craft steps:
    - [Step 2](https://docs.craftcms.com/v3/installation.html#step-2-set-the-file-permissions): Set permissions.
    - [Step 3](https://docs.craftcms.com/v3/installation.html#step-3-set-a-security-key): Set the key.
    - [Step 4](https://docs.craftcms.com/v3/installation.html#step-4-create-a-database): Create database (use convention below).
@@ -86,8 +87,8 @@ The cases are the following
    - [Step 5](https://docs.craftcms.com/v3/installation.html#step-5-set-up-the-web-server): Set up web server.
      - Follow steps [here](https://www.evernote.com/l/AAdH90XLgkdDfKnv7NvFTKlAbUJ_RGApuI4) in case you need help installing the cms web host for the first time.
      - **Remember** to point the vhost to ```root/cms/web/``` folder!
-3. Edit `.env` file inside `project-name/cms/`. Fill the `db_user`, `db_password`, `db_database` variables.
-4. Open ```gulpfile.js``` located in the root folder of the project, locate the variable ```vHost``` on line 22. Edit it and add the vHost url you are using to run the local environment.
+4. Edit `.env` file inside `project-name/cms/`. Fill the `db_user`, `db_password`, `db_database` variables.
+5. Open ```gulpfile.js``` located in the root folder of the project, locate the variable ```vHost``` on line 22. Edit it and add the vHost url you are using to run the local environment.
 
 ------
 
@@ -109,8 +110,12 @@ After this steps you are ready to start development on your new project. All dev
 1. Pull the project from github.
 2. Go to projet folder and run the command `npm install` to install dependencies.
 3. Set up vhost using same name located on line 22 in `gulpfile.js` 
-4. Create new db for project using same db name used in `.env` (file is hidden by default) located in `project-name/cms/`
-5. Import updated db for project into the created db.
+4. Rename `.env.example` file to `.env` (file located in cms folder).
+5. Create new db for project using convention below.
+   - name: [project]_cmsdb_[prod/staging]
+   - collation: utf8_general_ci
+6. Update `.env` file to match credentials of db.
+7. Import updated db for project into the created db.
 
 Run `alloy watch` to continue development.
 
