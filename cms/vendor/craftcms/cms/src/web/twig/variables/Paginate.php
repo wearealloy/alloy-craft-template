@@ -8,16 +8,42 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\db\Paginator;
 use craft\helpers\UrlHelper;
+use yii\base\BaseObject;
 
 /**
  * Paginate variable class.
  *
+ * @property string $basePath
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0
  */
-class Paginate
+class Paginate extends BaseObject
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Creates a new instance based on a Paginator object
+     *
+     * @param Paginator $paginator
+     * @return static
+     */
+    public static function create(Paginator $paginator): self
+    {
+        $pageResults = $paginator->getPageResults();
+        $pageOffset = $paginator->getPageOffset();
+
+        return new static([
+            'first' => $pageOffset + 1,
+            'last' => $pageOffset + count($pageResults),
+            'total' => $paginator->getTotalResults(),
+            'currentPage' => $paginator->getCurrentPage(),
+            'totalPages' => $paginator->getTotalPages(),
+        ]);
+    }
+
     // Properties
     // =========================================================================
 
@@ -46,8 +72,38 @@ class Paginate
      */
     public $totalPages = 0;
 
+    /**
+     * @var string Base path
+     * @see getBasePath()
+     * @see setBasePath()
+     */
+    private $_basePath;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns the base path that should be used for pagination URLs.
+     *
+     * @return string
+     */
+    public function getBasePath(): string
+    {
+        if ($this->_basePath !== null) {
+            return $this->_basePath;
+        }
+        return $this->_basePath = Craft::$app->getRequest()->getPathInfo();
+    }
+
+    /**
+     * Sets the base path that should be used for pagination URLs.
+     *
+     * @param string $basePath
+     */
+    public function setBasePath(string $basePath)
+    {
+        $this->_basePath = $basePath;
+    }
 
     /**
      * Returns the URL to a specific page
@@ -58,7 +114,7 @@ class Paginate
     public function getPageUrl(int $page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
-            $path = Craft::$app->getRequest()->getPathInfo();
+            $path = $this->getBasePath();
             $params = [];
 
             if ($page != 1) {

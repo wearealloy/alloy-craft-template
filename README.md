@@ -1,4 +1,4 @@
-*As for 10/23/2018 this workflow is optimized to work with Craft CMS 3.0.27.1 (Solo Version)
+*As for 05/29/2019 this workflow is optimized to work with Craft CMS  [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip) (Solo Version)
 If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.*
 
 *Foundation version: v6.5.0-rc.4*
@@ -14,6 +14,8 @@ The development folder structure has to be the following:
 
 ```bash
 ├── cms
+|		└── web
+|      	└── media
 ├── dev
 │   ├── assets
 │   │   ├── _js
@@ -49,15 +51,16 @@ The development folder structure has to be the following:
 └── webpack.config.js
 ```
 
-The root folder of the project is going to have two main sub folders `cms` and `dev` (it also includes two main files `gulpfile.js`, `package.json`). The `cms` folder contains all the files needed for craft 3 to work. This folder won’t be edited unless there has to be a change in a craft related file.
+The root folder of the project is going to have two main sub folders `cms` and `dev` (it also includes two main files `gulpfile.js`, `package.json`). The `cms` folder contains the `media` folder, which is inside the `web` folder. It also contains all the files needed for craft 3 to work. This folder won’t be edited unless there has to be a change in a craft related file.
 
-The `dev` folder is where all development is going to happen. It has three subfolder: ‘assets’, ‘media’ and ‘templates’ as well as one javascript called `entry.js` (this file is not to be edited unless you know what are doing with gulp).
+- media 
+  - This folder contains assets that can be added or deleted by the client through the cms.
+
+The `dev` folder is where all development is going to happen. It has two subfolder: `assets` and `templates` as well as one javascript called `entry.js` (this file is not to be edited unless you know what are doing with gulp).
 
 * assets
     * All scss|sass|css, javascript and images (images that the client won’t be adding or deleting) are going to be added in this folder. 
     * There are two `main` files inside the `_js` and `_scss` folders. In this files is where all the imports are going to be made. Eg: an scss file called `hero.scss` is created inside the `components` folder. This file has to be imported in the `main.scss` by using scss import syntax (`@import ‘components/hero’`), this is so is taken into consideration by gulp. This also has to be done with javascript files inside the `_js` folder.
-* media 
-    * This folder contains assets that can be added or deleted by the client through the cms.
 * templates 
     * This folder includes all the HTML files either using twig templating language or not.
 
@@ -69,8 +72,8 @@ This workflow will be devided into cases, each case would follow a specific numb
 The cases are the following
 
 * Development from scratch
+* Development continuation from `git pull`
 * Pushing to staging or production
-* Development from existing project
 
 
 
@@ -100,7 +103,7 @@ After this steps you are ready to start development on your new project. All dev
 - scss|sass|css files go inside ```dev/assets/_scss```, js files go inside ```dev/assets/_js```
 - Any time you want to add  scss|sass|css or js files, they have to be included in the main.scss or main.js files respectively. If not they won’t be taken into consideration when watching or building the files for production.
 - All HTML files go inside the ```template/``` folder. Twig can be used to write HTML files with no issue.
-- Files go inside ```dev/assets/img/``` or ```dev/media``` depending on the use.
+- Files go inside ```dev/assets/img/``` or ```cms/web/media``` depending on the use.
 - Since craft uses the ```web/``` directory as entry point, all references in html, css and js files need be relative to that directory.
 
 
@@ -132,25 +135,5 @@ Go to root folder of project using terminal and run the command ```alloy build``
     1. Comment out local environmental variables
     2. Add staging environmental variables (db user, db password, db name)
 4. Once on the server, find the dev_files folder and change permissions to '644'.
-
----
-
-## Development from existing project:
-
-```diff
-- This case only applies if the development of the project was initiated using this workflow and the initial development files are lost.
-```
-This case only applies when you are going to start or continue development from a project that you pulled from         production or staging.
-
-1. Create root folder for project if it doesn’t exist and name it ‘projectname’.’domain’  (eg: uberrito.com).
-2. Export db from server and import it locally
-3. Clone the [web-workflow](https://github.com/wearealloy/web-workflow) repo and place it inside the root folder.
-4. Download all files from staging or production server and place them inside the cms folder located in the root of the project.
-5. Edit ‘.env’ file located at ```root/cms/```
-    1. Comment out staging or production environmental variables
-    2. Add local environmental variables (db user, db password, db name)
-6. Run the command ```npm run buildDev``` from the root of the project.
-
-    You are now ready to start development. Read after steps on the 'Development from scratch’ case for more info.
 
 

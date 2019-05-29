@@ -14,7 +14,7 @@ After creating a new site for a language, enable the new site in each Section. I
 
 In Settings → Fields, choose the fields you want to have translatable. Under Translation Method, choose "Translate for each language."
 
-Craft will allow you to update this field's content in each entry on a per-language basis. 
+Craft will allow you to update this field's content in each entry on a per-language basis.
 
 ## Step 4: Update Your Templates
 
@@ -37,7 +37,7 @@ Use `craft.app.language` to toggle specific parts of your templates, depending o
 {% endif %}
 ```
 
-You can also take advantage of Craft’s static translation support for strings throughout your templates.
+You can also take advantage of Craft’s [static translation](https://docs.craftcms.com/v3/static-translations.html) support for strings throughout your templates.
 
 ```twig
 {{ "Welcome!"|t }}

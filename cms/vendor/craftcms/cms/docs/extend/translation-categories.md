@@ -1,6 +1,6 @@
 # Translation Categories
 
-Modules and plugins can provide custom translation categories, for use by Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/1.1/en/topics.i18n#message-translation) feature.
+Modules and plugins can provide custom translation categories, for use by Yii’s [Message Translations](https://www.yiiframework.com/doc/guide/2.0/en/tutorial-i18n#message-translation) feature.
 
 ::: tip
 See [Static Message Translations](../static-translations.md) for more details on how message translations work.
@@ -14,7 +14,7 @@ use craft\i18n\PhpMessageSource;
 public function init()
 {
     parent::init();
-    
+
     Craft::$app->i18n->translations['my-category'] = [
         'class' => PhpMessageSource::class,
         'sourceLanguage' => 'en',

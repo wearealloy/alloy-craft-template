@@ -126,7 +126,6 @@ gulp.task('copyFonts', function(){
 
 gulp.task('img', () =>
     gulp.src('dev/assets/img/**/*.+(png|jpg|gif|svg)')
-        .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
         // .pipe(chmod(777))
         .pipe(gulp.dest(pathToCms.img))
         .pipe(browserSync.reload({
@@ -135,22 +134,20 @@ gulp.task('img', () =>
 );
 
 gulp.task('media', () =>
-    gulp.src('dev/media/**/*')
-        .pipe((mode.production(imagemin([imageminMozjpeg(), imagemin.optipng()]))))
+    gulp.src('cms/web/media/**/*')
         // .pipe(chmod(777))
-        .pipe(gulp.dest(pathToCms.media))
         .pipe(browserSync.reload({
         stream: true
       }))
 );
 
 gulp.task('clean', function(){
- return del.sync(['cms/web/assets/', 'cms/web/media', 'cms/templates', 'cms/dev_files']);
+ return del.sync(['cms/web/assets/', 'cms/templates', 'cms/dev_files']);
 });
 
-gulp.task('cleanDev', function(){
- return del.sync(['dev']);
-});
+// gulp.task('cleanDev', function(){
+//  return del.sync(['dev']);
+// });
 
 gulp.task('browserSync', function() {
   browserSync.init({
@@ -161,16 +158,16 @@ gulp.task('browserSync', function() {
   });
 });
 
-gulp.task('copyDevFiles', function(){
-  return gulp.src('dev/**/*')
-    .pipe(gulp.dest(pathToCms.devFiles))
-});
+// gulp.task('copyDevFiles', function(){
+//   return gulp.src('dev/**/*')
+//     .pipe(gulp.dest(pathToCms.devFiles))
+// });
 
 
-gulp.task('copyCMSFiles', function(){
-  return gulp.src('cms/dev_files/**/*')
-    .pipe(gulp.dest('dev'))
-});
+// gulp.task('copyCMSFiles', function(){
+//   return gulp.src('cms/dev_files/**/*')
+//     .pipe(gulp.dest('dev'))
+// });
 
 
 // Taks to run on command line
@@ -180,12 +177,12 @@ gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', '
   gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
   gulp.watch('dev/assets/fonts/**/*.+(eot|svg|ttf|woff)')
-  gulp.watch('dev/media/**/*.+(png|jpg|gif|svg)', ['media']);
+  gulp.watch('cms/web/media/**/*.+(png|jpg|gif|svg|mp4)', ['media']);
   gulp.watch('dev/templates/**/*.html', ['copyHTML']);
 });
 
-gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'copyDevFiles']);
+gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts']);
 
-gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
+// gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
 
 // http://analyticl.com/blog/frontend-templating-with-gulp-and-twig-js

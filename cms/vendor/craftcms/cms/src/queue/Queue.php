@@ -8,6 +8,7 @@
 namespace craft\queue;
 
 use Craft;
+use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -167,7 +168,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%queue}}',
+                Table::QUEUE,
                 [
                     'dateReserved' => null,
                     'timeUpdated' => null,
@@ -185,12 +186,39 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Re-adds all failed jobs to the queue
+     */
+    public function retryAll()
+    {
+        // Move expired messages into waiting list
+        $this->_moveExpired();
+
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                Table::QUEUE,
+                [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'attempt' => 0,
+                    'fail' => false,
+                    'dateFailed' => null,
+                    'error' => null,
+                ],
+                ['fail' => true],
+                [],
+                false
+            )
+            ->execute();
+    }
+
+    /**
      * @inheritdoc
      */
     public function release(string $id)
     {
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%queue}}', ['id' => $id])
+            ->delete(Table::QUEUE, ['id' => $id])
             ->execute();
     }
 
@@ -201,7 +229,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%queue}}',
+                Table::QUEUE,
                 [
                     'progress' => $progress,
                     'timeUpdated' => time(),
@@ -322,6 +350,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function handleError($id, $job, $ttr, $attempt, $error)
     {
+        /** @var \Throwable $error */
         $this->_executingJobId = null;
 
         if (parent::handleError($id, $job, $ttr, $attempt, $error)) {
@@ -331,7 +360,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             // Mark the job as failed
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'fail' => true,
                         'dateFailed' => Db::prepareDateForDb(new \DateTime()),
@@ -417,7 +446,7 @@ EOD;
         $db = Craft::$app->getDb();
         $db->createCommand()
             ->insert(
-                '{{%queue}}',
+                Table::QUEUE,
                 [
                     'job' => $message,
                     'description' => $this->_jobDescription,
@@ -429,7 +458,7 @@ EOD;
                 false)
             ->execute();
 
-        return $db->getLastInsertID('{{%queue}}');
+        return $db->getLastInsertID(Table::QUEUE);
     }
 
     /**
@@ -460,7 +489,7 @@ EOD;
             $payload['attempt'] = (int)$payload['attempt'] + 1;
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
                         'timeUpdated' => $payload['timeUpdated'],
@@ -495,7 +524,7 @@ EOD;
             $this->_reserveTime = time();
             Craft::$app->getDb()->createCommand()
                 ->update(
-                    '{{%queue}}',
+                    Table::QUEUE,
                     [
                         'dateReserved' => null,
                         'timeUpdated' => null,
@@ -517,7 +546,7 @@ EOD;
     private function _createJobQuery(): Query
     {
         return (new Query())
-            ->from('{{%queue}}');
+            ->from(Table::QUEUE);
     }
 
     /**

@@ -14,6 +14,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -24,6 +25,8 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
+use craft\errors\OperationAbortedException;
+use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -82,7 +85,7 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event ElementEvent The event that is triggered before an element is deleted.
+     * @event DeleteElementEvent The event that is triggered before an element is deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
 
@@ -90,6 +93,16 @@ class Elements extends Component
      * @event ElementEvent The event that is triggered after an element is deleted.
      */
     const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
+
+    /**
+     * @event ElementEvent The event that is triggered before an element is restored.
+     */
+    const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is restored.
+     */
+    const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
@@ -224,7 +237,6 @@ class Elements extends Component
         }
 
         // First get the element ID and type
-
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
@@ -232,6 +244,12 @@ class Elements extends Component
             ->where([
                 'elements_sites.siteId' => $siteId,
             ]);
+
+        // todo: remove schema version condition after next beakpoint
+        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        if (version_compare($schemaVersion, '3.1.0', '>=')) {
+            $query->andWhere(['elements.dateDeleted' => null]);
+        }
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query->andWhere([
@@ -265,7 +283,7 @@ class Elements extends Component
     {
         $class = (new Query())
             ->select(['type'])
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementId])
             ->scalar();
 
@@ -283,7 +301,7 @@ class Elements extends Component
         return (new Query())
             ->select(['type'])
             ->distinct(true)
-            ->from(['{{%elements}}'])
+            ->from([Table::ELEMENTS])
             ->where(['id' => $elementIds])
             ->column();
     }
@@ -293,13 +311,13 @@ class Elements extends Component
      *
      * @param int $elementId The element’s ID.
      * @param int $siteId The site to search for the element’s URI in.
-     * @return string|null The element’s URI, or `null`.
+     * @return string|null|false The element’s URI or `null`, or `false` if the element doesn’t exist.
      */
     public function getElementUriForSite(int $elementId, int $siteId)
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -315,7 +333,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_sites}}'])
+            ->from([Table::ELEMENTS_SITES])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -400,7 +418,7 @@ class Elements extends Component
 
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
-            $humanClass = ucfirst(App::humanizeClass(get_class($element)));
+            $humanClass = App::humanizeClass(get_class($element));
             if ($isNewElement) {
                 $element->title = Craft::t('app', 'New {class}', ['class' => $humanClass]);
             } else {
@@ -519,7 +537,7 @@ class Elements extends Component
         // Delete the rows that don't need to be there anymore
         if (!$isNewElement) {
             Db::deleteIfExists(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'and',
                     ['elementId' => $element->id],
@@ -570,7 +588,7 @@ class Elements extends Component
         $element->getFieldValues();
         /** @var Element $mainClone */
         $mainClone = clone $element;
-        $mainClone->setAttributes($newAttributes);
+        $mainClone->setAttributes($newAttributes, false);
         $mainClone->duplicateOf = $element;
         $mainClone->id = null;
         $mainClone->contentId = null;
@@ -580,6 +598,13 @@ class Elements extends Component
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
+        }
+
+        // Set a unique URI on the clone
+        try {
+            ElementHelper::setUniqueUri($mainClone);
+        } catch (OperationAbortedException $e) {
+            // Oh well, not worth bailing over
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -603,12 +628,19 @@ class Elements extends Component
 
                     /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
-                    $siteClone->setAttributes($newAttributes);
+                    $siteClone->setAttributes($newAttributes, false);
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
                     $siteClone->id = $mainClone->id;
                     $siteClone->siteId = $siteInfo['siteId'];
                     $siteClone->contentId = null;
+
+                    // Set a unique URI on the site clone
+                    try {
+                        ElementHelper::setUniqueUri($siteClone);
+                    } catch (OperationAbortedException $e) {
+                        // Oh well, not worth bailing over
+                    }
 
                     if (!$this->saveElement($siteClone, false, false)) {
                         throw new InvalidElementException($siteClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $siteInfo['siteId']);
@@ -619,7 +651,6 @@ class Elements extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -665,7 +696,7 @@ class Elements extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_sites}}',
+                Table::ELEMENTS_SITES,
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -777,14 +808,14 @@ class Elements extends Component
             // Update any relations that point to the merged element
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from(['{{%relations}}'])
+                ->from([Table::RELATIONS])
                 ->where(['targetId' => $mergedElementId])
                 ->all();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
                 $persistingElementIsRelatedToo = (new Query())
-                    ->from(['{{%relations}}'])
+                    ->from([Table::RELATIONS])
                     ->where([
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
@@ -796,7 +827,7 @@ class Elements extends Component
                 if (!$persistingElementIsRelatedToo) {
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%relations}}',
+                            Table::RELATIONS,
                             [
                                 'targetId' => $prevailingElementId
                             ],
@@ -810,14 +841,14 @@ class Elements extends Component
             // Update any structures that the merged element is in
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
-                ->from(['{{%structureelements}}'])
+                ->from([Table::STRUCTUREELEMENTS])
                 ->where(['elementId' => $mergedElementId])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from(['{{%structureelements}}'])
+                    ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId
@@ -826,7 +857,7 @@ class Elements extends Component
 
                 if (!$persistingElementIsInStructureToo) {
                     Craft::$app->getDb()->createCommand()
-                        ->update('{{%relations}}',
+                        ->update(Table::RELATIONS,
                             [
                                 'elementId' => $prevailingElementId
                             ],
@@ -874,7 +905,6 @@ class Elements extends Component
             return $success;
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
     }
@@ -891,6 +921,7 @@ class Elements extends Component
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
+        /** @var ElementInterface|string|null $elementType */
         if ($elementType === null) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
@@ -904,7 +935,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_sites}}')
+                ->from(Table::ELEMENTS_SITES)
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
@@ -933,18 +964,17 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
+        $event = new DeleteElementEvent([
+            'element' => $element,
+            'hardDelete' => false,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
 
         if (!$element->beforeDelete()) {
             return false;
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
@@ -969,31 +999,158 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Delete the elements table rows, which will cascade across all other InnoDB tables
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', ['id' => $element->id])
-                ->execute();
-
-            // The searchindex table is probably MyISAM, though
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%searchindex}}', ['elementId' => $element->id])
-                ->execute();
+            if ($event->hardDelete) {
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::ELEMENTS, ['id' => $element->id])
+                    ->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
+                    ->execute();
+            } else {
+                // Soft delete the elements table row
+                Craft::$app->getDb()->createCommand()
+                    ->softDelete(Table::ELEMENTS, ['id' => $element->id])
+                    ->execute();
+            }
 
             $element->afterDelete();
 
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
-
 
         // Fire an 'afterDeleteElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
                 'element' => $element,
             ]));
+        }
+
+        return true;
+    }
+
+    /**
+     * Restores an element.
+     *
+     * @param ElementInterface $element
+     * @return bool Whether the element was restored successfully
+     * @throws Exception if the $element doesn’t have any supported sites
+     * @throws \Throwable if reasons
+     */
+    public function restoreElement(ElementInterface $element): bool
+    {
+        return $this->restoreElements([$element]);
+    }
+
+    /**
+     * Restores multiple elements.
+     *
+     * @param ElementInterface[] $elements
+     * @return bool Whether at least one element was restored successfully
+     * @throws Exception if an $element doesn’t have any supported sites
+     * @throws \Throwable if reasons
+     */
+    public function restoreElements(array $elements): bool
+    {
+        // Fire "before" events
+        foreach ($elements as $element) {
+            /** @var Element $element */
+            // Fire a 'beforeRestoreElement' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
+                $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
+                    'element' => $element,
+                ]));
+            }
+
+            if (!$element->beforeRestore()) {
+                return false;
+            }
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Restore the elements
+            foreach ($elements as $element) {
+                // Get the sites supported by this element
+                if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+                    throw new Exception("Element {$element->id} has no supported sites.");
+                }
+
+                // Make sure the element actually supports the site it's being saved in
+                $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+                if (!in_array($element->siteId, $supportedSiteIds, false)) {
+                    throw new Exception('Attempting to restore an element in an unsupported site.');
+                }
+
+                // Get the element in each supported site
+                $siteElements = [];
+                /** @var Element|string $class */
+                $class = get_class($element);
+                foreach ($supportedSites as $siteInfo) {
+                    $siteId = $siteInfo['siteId'];
+                    if ($siteId != $element->siteId) {
+                        $siteElement = $class::find()
+                            ->id($element->id)
+                            ->siteId($siteId)
+                            ->anyStatus()
+                            ->trashed(null)
+                            ->one();
+                        if ($siteElement) {
+                            $siteElements[] = $siteElement;
+                        }
+                    }
+                }
+
+                // Make sure it still passes essential validation
+                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                if (!$element->validate()) {
+                    Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
+                    $transaction->rollBack();
+                    return false;
+                }
+
+                foreach ($siteElements as $siteElement) {
+                    if ($siteElement !== $element) {
+                        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+                        if (!$siteElement->validate()) {
+                            Craft::warning("Unable to restore element {$element->id}: doesn't pass essential validation for site {$element->siteId}: " . print_r($element->errors, true), __METHOD__);
+                            throw new Exception("Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
+                        }
+                    }
+                }
+
+                // Restore it
+                Craft::$app->getDb()->createCommand()
+                    ->restore(Table::ELEMENTS, ['id' => $element->id])
+                    ->execute();
+
+                // Restore its search indexes
+                $searchService = Craft::$app->getSearch();
+                $searchService->indexElementAttributes($element);
+                foreach ($siteElements as $siteElement) {
+                    $searchService->indexElementAttributes($siteElement);
+                }
+            }
+
+            // Fire "after" events
+            foreach ($elements as $element) {
+                $element->afterRestore();
+                $element->trashed = false;
+
+                // Fire an 'afterRestoreElement' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
+                    $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
+                        'element' => $element,
+                    ]));
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
         return true;
@@ -1188,6 +1345,7 @@ class Elements extends Component
      */
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
+        /** @var Element[] $elements */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -1271,6 +1429,9 @@ class Elements extends Component
                             $map['criteria'] ?? [],
                             $pathCriterias[$targetPath] ?? []
                         ));
+                        if (!$query->siteId) {
+                            $query->siteId = reset($elements)->siteId;
+                        }
                         $query->andWhere(['elements.id' => $uniqueTargetElementIds]);
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();
@@ -1371,6 +1532,7 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Try to fetch the element in this site
+        /** @var Element|null $siteElement */
         $siteElement = null;
         if (!$isNewElement) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
@@ -1378,13 +1540,13 @@ class Elements extends Component
 
         // If it doesn't exist yet, just clone the master site
         if ($isNewSiteForElement = ($siteElement === null)) {
-            /** @var Element $siteElement */
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
         } else {
             $siteElement->enabled = $element->enabled;
+            $siteElement->resaving = $element->resaving;
         }
 
         // Copy any non-translatable field values

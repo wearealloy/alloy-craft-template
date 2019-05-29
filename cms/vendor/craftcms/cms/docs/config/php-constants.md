@@ -44,6 +44,15 @@ Your Craft license key, if for some reason that must be defined by PHP rather th
 
 The path that Craft should store its license key file, including its filename. (It will be stored as `license.key` within your [config/](../directory-structure.md#config) folder by default.)
 
+### `CRAFT_LOG_PHP_ERRORS`
+
+Can be set to `false` to prevent Craft from setting PHP’s [log_errors](http://php.net/manual/en/errorfunc.configuration.php#ini.log-errors) setting, leaving it up to whatever’s set in `php.ini`.
+
+```php
+// Don't send PHP error logs to storage/logs/phperrors.log
+define('CRAFT_LOG_PHP_ERRORS', false);
+``` 
+
 ### `CRAFT_SITE`
 
 The Site handle or ID that Craft should be serving from this `index.php` file. (Only set this if you have a good reason to. Craft will automatically serve the correct site by inspecting the requested URL, unless this is set.)
@@ -56,6 +65,10 @@ define('CRAFT_SITE', 'de');
 ### `CRAFT_STORAGE_PATH`
 
 The path to the [storage/](../directory-structure.md#storage) folder. (It is assumed to live within the base directory by default.)
+
+::: tip
+Make sure you set this to a valid folder path, otherwise it will be ignored.
+:::
 
 ### `CRAFT_TEMPLATES_PATH`
 
