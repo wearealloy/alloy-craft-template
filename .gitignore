@@ -3,4 +3,3 @@ node_modules
 cms/.env
 cms/templates/*
 cms/web/assets/*
-cms/web/media/*
