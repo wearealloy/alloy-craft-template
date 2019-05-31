@@ -19,7 +19,7 @@
 
   //global variables
 
-  var vHost = 'vhost address';
+  var vHost = 'vHost address here';
 
 //*************************************
 
@@ -48,6 +48,8 @@ var del = require('del');
 const webpack2 = require('webpack');
 const webpackStream = require('webpack-stream');
 const named = require('vinyl-named');
+const rev = require('gulp-rev');
+const revRewrite = require('gulp-rev-rewrite');
 // const webpackConfig = require('./webpack.config.js');
 
 //*************************************
@@ -89,6 +91,7 @@ gulp.task('copyScripts', function() {
 
 
 gulp.task('templates', function() {
+
   return gulp.src('dev/templates/**/*.html') // run the Twig template parser on all .html files in the "src" directory
       .pipe(twig())
       .pipe(gulp.dest(pathToCms.html)) // output the rendered HTML files to the "dist" directory
@@ -97,7 +100,17 @@ gulp.task('templates', function() {
     }))
 });
 
+gulp.task('revRewrite', ['sass', 'copyHTML'], function() {
+  console.log('runninr rewrite')
+  const manifest = gulp.src('cms/web/assets/css/rev-manifest.json');
+ 
+  return gulp.src('cms/templates/_layout.html')
+    .pipe(revRewrite({ manifest }))
+    .pipe(gulp.dest(pathToCms.html));
+});
+
 gulp.task('copyHTML', function(){
+  
   return gulp.src('dev/templates/**/*.html')
   .pipe(gulp.dest(pathToCms.html))
   .pipe(browserSync.reload({
@@ -106,6 +119,7 @@ gulp.task('copyHTML', function(){
 });
 
 gulp.task('sass', function(){
+
   return gulp.src('dev/assets/_scss/main.scss')
     .pipe(plumber())
     .pipe(sourcemaps.init())
@@ -113,6 +127,9 @@ gulp.task('sass', function(){
       .pipe(autoprefixer())
     .pipe(sourcemaps.write())
     .pipe((mode.production(cleanCSS())))
+    .pipe(rev())
+    .pipe(gulp.dest(pathToCms.css))
+    .pipe(rev.manifest())
     .pipe(gulp.dest(pathToCms.css))
     .pipe(browserSync.reload({
       stream: true
@@ -145,6 +162,10 @@ gulp.task('clean', function(){
  return del.sync(['cms/web/assets/', 'cms/templates', 'cms/dev_files']);
 });
 
+gulp.task('cleanCss', function(){
+ return del.sync(['cms/web/assets/css/']);
+});
+
 // gulp.task('cleanDev', function(){
 //  return del.sync(['dev']);
 // });
@@ -172,16 +193,16 @@ gulp.task('browserSync', function() {
 
 // Taks to run on command line
 
-gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'browserSync'], function(){
-  gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['sass']);
+gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'revRewrite', 'browserSync'], function(){
+  gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['cleanCss','sass', 'copyHTML', 'revRewrite']);
   gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
   gulp.watch('dev/assets/fonts/**/*.+(eot|svg|ttf|woff)')
   gulp.watch('cms/web/media/**/*.+(png|jpg|gif|svg|mp4)', ['media']);
-  gulp.watch('dev/templates/**/*.html', ['copyHTML']);
+  gulp.watch('dev/templates/**/*.html', ['copyHTML', 'revRewrite']);
 });
 
-gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts']);
+gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'revRewrite']);
 
 // gulp.task('buildDev', ['cleanDev', 'copyCMSFiles']);
 

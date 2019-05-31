@@ -1,6 +1,6 @@
 {
   "name": "gulp_workflow",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -31,6 +31,8 @@
     "gulp-mode": "^1.0.2",
     "gulp-order": "^1.2.0",
     "gulp-plumber": "^1.2.0",
+    "gulp-rev": "^9.0.0",
+    "gulp-rev-rewrite": "^1.1.4",
     "gulp-sass": "^4.0.2",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-twig": "^1.2.0",
