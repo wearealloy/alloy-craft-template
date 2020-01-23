@@ -11,7 +11,7 @@ namespace craft\queue;
  * QueueInterface defines the common interface to be implemented by queue classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface QueueInterface
 {
@@ -38,8 +38,9 @@ interface QueueInterface
      * Sets the progress for the currently reserved job.
      *
      * @param int $progress The job progress (1-100)
+     * @param string|null $label The progress label
      */
-    public function setProgress(int $progress);
+    public function setProgress(int $progress, string $label = null);
 
     /**
      * Returns whether there are any waiting jobs

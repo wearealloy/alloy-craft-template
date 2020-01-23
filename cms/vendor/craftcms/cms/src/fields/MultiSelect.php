@@ -9,12 +9,13 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\MultiOptionsFieldData;
 
 /**
  * MultiSelect represents a Multi-select field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MultiSelect extends BaseOptionsField
 {
@@ -29,17 +30,29 @@ class MultiSelect extends BaseOptionsField
         return Craft::t('app', 'Multi-select');
     }
 
-    // Public Methods
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MultiOptionsFieldData::class;
+    }
+
+    // Properties
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        parent::init();
-        $this->multi = true;
-    }
+    public $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

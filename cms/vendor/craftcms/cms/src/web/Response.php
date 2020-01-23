@@ -13,7 +13,7 @@ use yii\web\HttpException;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Response extends \yii\web\Response
 {
@@ -140,6 +140,9 @@ class Response extends \yii\web\Response
         if (headers_sent()) {
             return;
         }
+
+        // Get the active user before headers are sent
+        Craft::$app->getUser()->getIdentity();
 
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);

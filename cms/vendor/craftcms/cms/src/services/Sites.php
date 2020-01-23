@@ -46,7 +46,7 @@ use yii\db\Exception as DbException;
  * @property int $totalSites the total number of sites
  * @property int $totalEditableSites the total number of sites that are editable by the current user
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Sites extends Component
 {
@@ -70,6 +70,7 @@ class Sites extends Component
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -112,6 +113,7 @@ class Sites extends Component
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
 
@@ -632,7 +634,6 @@ class Sites extends Component
         $isNewSite = !$site->id;
 
         if (!empty($this->_sitesById)) {
-            // Did the primary site just change?
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } else {
             $oldPrimarySiteId = null;
@@ -700,9 +701,9 @@ class Sites extends Component
         $groupUid = $data['siteGroup'];
 
         // Ensure we have the site group in place first
-        Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->processConfigChanges(self::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
 
-        // Did the primary site just change?
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
         } catch (SiteNotFoundException $e) {
@@ -761,33 +762,14 @@ class Sites extends Component
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            // TODO: Move this code into element/category modules
-            // Create site settings for each of the category groups
-            $allSiteSettings = (new Query())
-                ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                ->from([Table::CATEGORYGROUPS_SITES])
-                ->where(['siteId' => $oldPrimarySiteId])
-                ->all();
+            $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
+            $existingCategorySettings = $projectConfig->get(Categories::CONFIG_CATEGORYROUP_KEY);
 
-            if (!empty($allSiteSettings)) {
-                $newSiteSettings = [];
-
-                foreach ($allSiteSettings as $siteSettings) {
-                    $newSiteSettings[] = [
-                        $siteSettings['groupId'],
-                        $site->id,
-                        $siteSettings['uriFormat'],
-                        $siteSettings['template'],
-                        $siteSettings['hasUrls']
-                    ];
+            if (is_array($existingCategorySettings)) {
+                foreach ($existingCategorySettings as $categoryUid => $settings) {
+                    $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
+                    $projectConfig->set(Categories::CONFIG_CATEGORYROUP_KEY . '.' . $categoryUid . '.siteSettings.' . $site->uid, $primarySiteSettings);
                 }
-
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::CATEGORYGROUPS_SITES,
-                        ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
-                        $newSiteSettings)
-                    ->execute();
             }
 
             // Re-save most localizable element types
@@ -981,20 +963,6 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            Table::ENTRYDRAFTS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::ENTRYVERSIONS,
-                            ['siteId' => $transferContentTo],
-                            ['entryId' => $entryIds])
-                        ->execute();
-
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
                             Table::RELATIONS,
                             ['sourceSiteId' => $transferContentTo],
                             [
@@ -1012,17 +980,6 @@ class Sites extends Component
                         ->column();
 
                     if (!empty($blockIds)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::MATRIXBLOCKS,
-                                ['ownerSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['id' => $blockIds],
-                                    ['not', ['ownerSiteId' => null]]
-                                ])
-                            ->execute();
-
                         Craft::$app->getDb()->createCommand()
                             ->delete(
                                 Table::ELEMENTS_SITES,
@@ -1152,6 +1109,7 @@ class Sites extends Component
      *
      * @param int $id The site’s ID
      * @return bool Whether the site was restored successfully
+     * @since 3.1.0
      */
     public function restoreSiteById(int $id): bool
     {
@@ -1206,6 +1164,8 @@ class Sites extends Component
                     's.baseUrl',
                     's.sortOrder',
                     's.uid',
+                    's.dateCreated',
+                    's.dateUpdated',
                 ])
                 ->from(['{{%sites}} s'])
                 ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
@@ -1384,16 +1344,22 @@ class Sites extends Component
                     $db->createCommand()
                         ->delete(Table::CONTENT, $deleteCondition)
                         ->execute();
+                    $db->createCommand()
+                        ->delete(Table::SEARCHINDEX, $deleteCondition)
+                        ->execute();
 
                     // Now swap the sites
                     $updateColumns = ['siteId' => $newPrimarySiteId];
                     $updateCondition = ['elementId' => $elementIds];
 
                     $db->createCommand()
-                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition)
+                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false)
                         ->execute();
                     $db->createCommand()
-                        ->update(Table::CONTENT, $updateColumns, $updateCondition)
+                        ->update(Table::CONTENT, $updateColumns, $updateCondition, [], false)
+                        ->execute();
+                    $db->createCommand()
+                        ->update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false)
                         ->execute();
                 }
             }

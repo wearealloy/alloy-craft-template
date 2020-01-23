@@ -14,7 +14,7 @@ use yii\base\Event as BaseEvent;
  * SearchEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SearchEvent extends BaseEvent
 {
@@ -34,7 +34,7 @@ class SearchEvent extends BaseEvent
     public $query;
 
     /**
-     * @var int|null The site ID to filter by
+     * @var int|int[]|null The site ID(s) to filter by
      */
     public $siteId;
 }

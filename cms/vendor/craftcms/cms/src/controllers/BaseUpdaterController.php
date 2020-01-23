@@ -27,7 +27,8 @@ use yii\web\Response;
  * BaseUpdaterController provides the base class for Craft/plugin installation/updating/removal.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 abstract class BaseUpdaterController extends Controller
 {
@@ -50,7 +51,7 @@ abstract class BaseUpdaterController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /**
      * @var array The data associated with the current update

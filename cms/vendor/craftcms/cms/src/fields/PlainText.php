@@ -19,7 +19,7 @@ use yii\db\Schema;
  * PlainText represents a Plain Text field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PlainText extends Field implements PreviewableFieldInterface
 {
@@ -32,6 +32,14 @@ class PlainText extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Plain Text');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
     }
 
     // Properties

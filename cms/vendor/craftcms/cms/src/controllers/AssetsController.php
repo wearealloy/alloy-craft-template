@@ -14,10 +14,8 @@ use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
-use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
@@ -26,6 +24,7 @@ use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -39,7 +38,7 @@ use yii\web\Response;
  * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetsController extends Controller
 {
@@ -259,11 +258,11 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The parent folder cannot be found');
         }
 
-        // Check if it's possible to create subfolders in target Volume.
-        $this->_requirePermissionByFolder('createFoldersInVolume',
-            $parentFolder);
-
         try {
+
+            // Check if it's possible to create subfolders in target Volume.
+            $this->_requirePermissionByFolder('createFoldersInVolume', $parentFolder);
+
             $folderModel = new VolumeFolder();
             $folderModel->name = $folderName;
             $folderModel->parentId = $parentId;
@@ -279,6 +278,8 @@ class AssetsController extends Controller
                 'folderId' => $folderModel->id
             ]);
         } catch (AssetException $exception) {
+            return $this->asErrorJson($exception->getMessage());
+        } catch (ForbiddenHttpException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
@@ -655,12 +656,7 @@ class AssetsController extends Controller
 
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
-                $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-
-                // If replacing, check for permissions to replace existing Asset files.
-                if ($replace) {
-                    $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
-                }
+                $this->_requirePermissionByAsset('editImagesInVolume', $asset);
             }
 
             // Verify parameter adequacy
@@ -805,13 +801,8 @@ class AssetsController extends Controller
 
         $this->_requirePermissionByAsset('viewVolume', $asset);
 
-        // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
-        App::maxPowerCaptain();
-        $localPath = $asset->getCopyOfFile();
-
         $response = Craft::$app->getResponse()
-            ->sendFile($localPath, $asset->filename);
-        FileHelper::unlink($localPath);
+            ->sendStreamAsFile($asset->stream, $asset->filename);
 
         return $response;
     }
@@ -878,9 +869,12 @@ class AssetsController extends Controller
         if ($transformId) {
             $transformIndexModel = $assetTransforms->getTransformIndexModelById($transformId);
         } else {
-            $assetId = $request->getBodyParam('assetId');
-            $handle = $request->getBodyParam('handle');
+            $assetId = $request->getRequiredBodyParam('assetId');
+            $handle = $request->getRequiredBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
+            if ($assetModel === null) {
+                throw new BadRequestHttpException('Invalid asset ID: ' . $assetId);
+            }
             $transformIndexModel = $assetTransforms->getTransformIndex($assetModel, $handle);
         }
 
@@ -979,7 +973,7 @@ class AssetsController extends Controller
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
         if (!$asset->volumeId) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
@@ -1001,7 +995,7 @@ class AssetsController extends Controller
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
         if (!$folder->volumeId) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $folder->id) {

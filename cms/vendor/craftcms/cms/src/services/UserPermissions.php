@@ -31,7 +31,7 @@ use yii\db\Exception;
  * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPermissions extends Component
 {
@@ -127,6 +127,9 @@ class UserPermissions extends Component
                             'label' => Craft::t('app', 'Administrate users'),
                             'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
+                        ],
+                        'impersonateUsers' => [
+                            'label' => Craft::t('app', 'Impersonate users'),
                         ],
                     ],
                 ],
@@ -599,6 +602,9 @@ class UserPermissions extends Component
                     ],
                     "deleteFilesAndFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
+                    ],
+                    "editImagesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Edit images'),
                     ]
                 ]
             ]

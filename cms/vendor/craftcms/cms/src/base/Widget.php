@@ -13,7 +13,7 @@ use Craft;
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
@@ -46,7 +46,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return null;
     }
@@ -55,6 +55,17 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      * @inheritdoc
      */
     public static function maxColspan()
+    {
+        return null;
+    }
+
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null
+     * @deprecated in 3.2.0. Use [[icon()]] instead.
+     */
+    public static function iconPath()
     {
         return null;
     }

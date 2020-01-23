@@ -223,7 +223,11 @@ abstract class Template
      */
     public function renderParentBlock($name, array $context, array $blocks = [])
     {
-        ob_start();
+        if ($this->env->isDebug()) {
+            ob_start();
+        } else {
+            ob_start(function () { return ''; });
+        }
         $this->displayParentBlock($name, $context, $blocks);
 
         return ob_get_clean();
@@ -244,7 +248,11 @@ abstract class Template
      */
     public function renderBlock($name, array $context, array $blocks = [], $useBlocks = true)
     {
-        ob_start();
+        if ($this->env->isDebug()) {
+            ob_start();
+        } else {
+            ob_start(function () { return ''; });
+        }
         $this->displayBlock($name, $context, $blocks, $useBlocks);
 
         return ob_get_clean();
@@ -301,6 +309,9 @@ abstract class Template
         return array_unique($names);
     }
 
+    /**
+     * @return Template|TemplateWrapper
+     */
     protected function loadTemplate($template, $templateName = null, $line = null, $index = null)
     {
         try {
@@ -342,6 +353,16 @@ abstract class Template
     }
 
     /**
+     * @internal
+     *
+     * @return Template
+     */
+    protected function unwrap()
+    {
+        return $this;
+    }
+
+    /**
      * Returns all blocks.
      *
      * This method is for internal use only and should never be called
@@ -362,7 +383,11 @@ abstract class Template
     public function render(array $context)
     {
         $level = ob_get_level();
-        ob_start();
+        if ($this->env->isDebug()) {
+            ob_start();
+        } else {
+            ob_start(function () { return ''; });
+        }
         try {
             $this->display($context);
         } catch (\Throwable $e) {

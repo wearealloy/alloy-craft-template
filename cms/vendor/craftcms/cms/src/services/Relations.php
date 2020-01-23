@@ -19,7 +19,7 @@ use yii\base\Component;
  * An instance of the Relations service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRelations()|`Craft::$app->relations`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Relations extends Component
 {
@@ -41,8 +41,8 @@ class Relations extends Component
             $targetIds = [];
         }
 
-        // Prevent duplicate target IDs.
-        $targetIds = array_unique($targetIds);
+        // Prevent duplicate/empty target IDs.
+        $targetIds = array_unique(array_filter($targetIds));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 

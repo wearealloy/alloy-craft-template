@@ -17,7 +17,7 @@ use craft\queue\BaseJob;
  * DeleteStaleTemplateCaches job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeleteStaleTemplateCaches extends BaseJob
 {
@@ -74,7 +74,12 @@ class DeleteStaleTemplateCaches extends BaseJob
         $deleteCacheIds = [];
 
         foreach ($query->each() as $row) {
-            $this->setProgress($queue, $currentRow++ / $totalRows);
+
+            $this->setProgress($queue, $currentRow / $totalRows, Craft::t('app', '{step} of {total}', [
+                'step' => $currentRow + 1,
+                'total' => $totalRows,
+            ]));
+            $currentRow++;
 
             // Do we already plan on deleting this cache?
             if (isset($deleteCacheIds[$row['cacheId']])) {

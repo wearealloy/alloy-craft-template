@@ -32,7 +32,7 @@ use yii\web\BadRequestHttpException;
  * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class InstallController extends Controller
 {
@@ -42,7 +42,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     // Public Methods
     // =========================================================================
@@ -57,6 +57,8 @@ class InstallController extends Controller
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
+
+        parent::init();
     }
 
     /**

@@ -17,7 +17,7 @@ use craft\helpers\StringHelper;
  * @property string $dateUpdated Date updated
  * @property string $uid UUID
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
@@ -35,6 +35,8 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 
     /**
      * Prepares record values for DB storage.
+     *
+     * @since 3.1.0
      */
     protected function prepareForDb()
     {
@@ -46,17 +48,26 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
         $now = Db::prepareDateForDb(new \DateTime());
 
         if ($this->getIsNewRecord()) {
-            if ($this->hasAttribute('dateCreated')) {
+            if ($this->hasAttribute('dateCreated') && !isset($this->dateCreated)) {
                 $this->dateCreated = $now;
             }
 
-            if ($this->hasAttribute('uid') && empty($this->uid)) {
+            if ($this->hasAttribute('dateUpdated') && !isset($this->dateUpdated)) {
+                $this->dateUpdated = $now;
+            }
+
+            if ($this->hasAttribute('uid') && !isset($this->uid)) {
                 $this->uid = StringHelper::UUID();
             }
-        }
-
-        if ($this->hasAttribute('dateUpdated')) {
-            $this->dateUpdated = $now;
+        } else if (
+            !empty($this->getDirtyAttributes()) &&
+            $this->hasAttribute('dateUpdated')
+        ) {
+            if (!$this->isAttributeChanged('dateUpdated')) {
+                $this->dateUpdated = $now;
+            } else {
+                $this->markAttributeDirty('dateUpdated');
+            }
         }
     }
 }

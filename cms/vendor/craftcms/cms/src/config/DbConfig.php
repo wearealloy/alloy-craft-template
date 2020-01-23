@@ -15,7 +15,7 @@ use yii\base\InvalidConfigException;
  * DB config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DbConfig extends BaseObject
 {
@@ -75,7 +75,7 @@ class DbConfig extends BaseObject
      */
     public $port;
     /**
-     * @var string The database schema to use (PostgreSQL only).
+     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
@@ -128,7 +128,7 @@ class DbConfig extends BaseObject
                     throw new InvalidConfigException('Invalid DSN param: ' . $param);
                 }
                 $paramName = substr($param, 0, $pos);
-                $paramValue = substr($params, $pos + 1);
+                $paramValue = substr($param, $pos + 1);
                 switch ($paramName) {
                     case 'host':
                         $this->server = $paramValue;

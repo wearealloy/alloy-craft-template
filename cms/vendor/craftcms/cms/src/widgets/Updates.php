@@ -15,7 +15,7 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
  * Updates represents an Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Updates extends Widget
 {
@@ -50,7 +50,7 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/excite.svg');
     }

@@ -13,13 +13,14 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\Query;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\db\Schema;
 
 /**
  * Class Db
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Db
 {
@@ -433,9 +434,10 @@ class Db
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
+     * @param string|null $columnType The database column type the param is targeting
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', $caseInsensitive = false)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, string $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -473,6 +475,8 @@ class Db
             $caseInsensitive = false;
         }
 
+        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+
         $inVals = [];
         $notInVals = [];
 
@@ -480,38 +484,34 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if (is_string($val) && strtolower($val) === ':empty:') {
-                if ($operator === '=') {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'or',
-                            [$column => null],
-                            [$column => '']
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [$column => null];
-                    }
-                } else {
-                    if ($isMysql) {
-                        $condition[] = [
-                            'not',
-                            [
-                                'or',
-                                [$column => null],
-                                [$column => '']
-                            ]
-                        ];
-                    } else {
-                        // Because PostgreSQL chokes if you do a string check on an int column
-                        $condition[] = [
-                            'not',
-                            [
-                                $column => null,
-                            ]
-                        ];
-                    }
+            if ($columnType === Schema::TYPE_BOOLEAN) {
+                // Convert val to a boolean
+                $val = ($val && $val !== ':empty:');
+                if ($operator === '!=') {
+                    $val = !$val;
                 }
+                $condition[] = $val ? [$column => true] : ['or', ['not', [$column => true]], [$column => null]];
+                continue;
+            }
+
+            if ($val === ':empty:') {
+                // If this is a textual column type, also check for empty strings
+                if (
+                    ($columnType === null && $isMysql) ||
+                    ($columnType !== null && static::isTextualColumnType($columnType))
+                ) {
+                    $valCondition = [
+                        'or',
+                        [$column => null],
+                        [$column => '']
+                    ];
+                } else {
+                    $valCondition = [$column => null];
+                }
+                if ($operator === '!=') {
+                    $valCondition = ['not', $valCondition];
+                }
+                $condition[] = $valCondition;
                 continue;
             }
 
@@ -557,27 +557,20 @@ class Db
                 continue;
             }
 
-            if ($caseInsensitive) {
-                $condition[] = [$operator, "lower([[{$column}]])", $val];
-            } else {
-                $condition[] = [$operator, $column, $val];
-            }
+            $condition[] = [$operator, $caseColumn, $val];
         }
 
         if (!empty($inVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['in', "lower([[{$column}]])", $inVals];
-            } else {
-                $condition[] = ['in', $column, $inVals];
-            }
+            $condition[] = self::_inCondition($caseColumn, $inVals);
         }
 
         if (!empty($notInVals)) {
-            if ($caseInsensitive) {
-                $condition[] = ['not in', "lower([[{$column}]])", $notInVals];
-            } else {
-                $condition[] = ['not in', $column, $notInVals];
-            }
+            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+        }
+
+        // Skip the glue if there's only one condition
+        if (count($condition) === 2) {
+            return $condition[1];
         }
 
         return $condition;
@@ -626,7 +619,7 @@ class Db
             $normalizedValues[] = $operator . static::prepareDateForDb($val);
         }
 
-        return static::parseParam($column, $normalizedValues);
+        return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
     }
 
     /**
@@ -635,6 +628,7 @@ class Db
      * @param string $type
      * @param Connection|null $db
      * @return bool
+     * @throws NotSupportedException
      */
     public static function isTypeSupported(string $type, Connection $db = null): bool
     {
@@ -658,6 +652,7 @@ class Db
      * @param Connection|null $db
      * @return int number of rows affected by the execution.
      * @throws \yii\db\Exception execution failed
+     * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
@@ -685,6 +680,7 @@ class Db
      * @param string $table
      * @param string $uid
      * @return int|null
+     * @since 3.1.0
      */
     public static function idByUid(string $table, string $uid)
     {
@@ -703,6 +699,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @return string[]
+     * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids): array
     {
@@ -719,6 +716,7 @@ class Db
      * @param string $table
      * @param int $id
      * @return string|null
+     * @since 3.1.0
      */
     public static function uidById(string $table, int $id)
     {
@@ -737,6 +735,7 @@ class Db
      * @param string $table
      * @param int[] $ids
      * @return string[]
+     * @since 3.1.0
      */
     public static function uidsByIds(string $table, array $ids): array
     {
@@ -782,9 +781,7 @@ class Db
             }
 
             // Remove any empty elements and reset the keys
-            $value = array_merge(array_filter($value));
-
-            return $value;
+            return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
         }
 
         return ArrayHelper::toArray($value);
@@ -799,7 +796,18 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (is_string($value) && strtolower($value) === ':notempty:') {
+            return;
+        }
+
+        if (!is_string($value) || $value === ':empty:' || $value === 'not :empty:') {
+            return;
+        }
+
+        $lower = strtolower($value);
+
+        if ($lower === ':empty:') {
+            $value = ':empty:';
+        } else if ($lower === ':notempty:' || $lower === 'not :empty:') {
             $value = 'not :empty:';
         }
     }
@@ -851,5 +859,17 @@ class Db
         }
 
         return $op;
+    }
+
+    /**
+     * @param string $column
+     * @param array $values
+     * @return array
+     */
+    private static function _inCondition(string $column, array $values): array
+    {
+        return [
+            $column => count($values) === 1 ? $values[0] : $values,
+        ];
     }
 }

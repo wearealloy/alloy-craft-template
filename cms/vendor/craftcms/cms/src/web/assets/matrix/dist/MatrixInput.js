@@ -541,8 +541,9 @@
                 this.$container.height('auto');
                 this.$fieldsContainer.show();
                 var expandedContainerHeight = this.$container.height();
+                var displayValue = this.$fieldsContainer.css('display') || 'block';
                 this.$container.height(collapsedContainerHeight);
-                this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast'});
+                this.$fieldsContainer.hide().velocity('fadeIn', {duration: 'fast', display: displayValue});
                 this.$container.velocity({height: expandedContainerHeight}, 'fast', $.proxy(function() {
                     this.$previewContainer.html('');
                     this.$container.height('auto');
@@ -671,6 +672,10 @@
                 this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
                     this.$container.remove();
                     this.matrix.updateAddBlockBtn();
+
+                    if (window.draftEditor) {
+                        window.draftEditor.checkForm();
+                    }
                 }, this));
             }
         });

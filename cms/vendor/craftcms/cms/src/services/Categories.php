@@ -37,7 +37,7 @@ use yii\base\Exception;
  * An instance of the Categories service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Categories extends Component
 {
@@ -61,6 +61,7 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -139,7 +140,7 @@ class Categories extends Component
     public function getEditableGroups(): array
     {
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::filterByValue($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
+        return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
         });
     }
@@ -170,6 +171,7 @@ class Categories extends Component
      *
      * @param string $uid
      * @return CategoryGroup|null
+     * @since 3.1.0
      */
     public function getGroupByUid(string $uid)
     {
@@ -522,6 +524,7 @@ class Categories extends Component
      * @param int $groupId The category group's ID
      * @return bool Whether the category group was deleted successfully
      * @throws \Throwable if reasons
+     * @since 3.0.12
      */
     public function deleteGroupById(int $groupId): bool
     {
@@ -744,12 +747,10 @@ class Categories extends Component
             return null;
         }
 
-        $query = Category::find();
-        $query->id($categoryId);
-        $query->structureId($structureId);
-        $query->siteId($siteId);
-        $query->anyStatus();
-        return $query->one();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, [
+            'structureId' => $structureId,
+        ]);
     }
 
     /**

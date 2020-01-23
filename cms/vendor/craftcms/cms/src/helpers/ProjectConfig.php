@@ -18,7 +18,7 @@ use yii\base\InvalidConfigException;
  * Class ProjectConfig
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class ProjectConfig
 {
@@ -113,16 +113,29 @@ class ProjectConfig
     }
 
     /**
+     * Resets the static memoization variables.
+     *
+     * @return void
+     */
+    public static function reset()
+    {
+        static::$_processedFields = false;
+        static::$_processedSites = false;
+        static::$_processedUserGroups = false;
+    }
+
+    /**
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
      * @param array $config Config array to clean
-     *
      * @return array
      * @throws InvalidConfigException if config contains unexpected data.
+     * @since 3.1.14
      */
     public static function cleanupConfig(array $config): array
     {
         $remove = [];
+        $sortItems = true;
 
         foreach ($config as $key => &$value) {
             // Only scalars, arrays and simple objects allowed.
@@ -143,12 +156,21 @@ class ProjectConfig
                     $remove[] = $key;
                 }
             }
+
+            // If the key isn't a UID, then don't sort this array
+            if ($sortItems && !StringHelper::isUUID($key)) {
+                $sortItems = false;
+            }
         }
         unset($value);
 
         // Remove empty stuff
         foreach ($remove as $removeKey) {
             unset($config[$removeKey]);
+        }
+
+        if ($sortItems) {
+            ksort($config);
         }
 
         return $config;

@@ -44,7 +44,7 @@ use yii\db\Exception as DbException;
  * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Users extends Component
 {
@@ -619,12 +619,11 @@ class Users extends Component
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->email = $user->unverifiedEmail;
+        $userRecord->unverifiedEmail = null;
 
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
-
-        $userRecord->unverifiedEmail = null;
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
@@ -883,22 +882,15 @@ class Users extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $userIds = (new Query())
-            ->select(['id'])
-            ->from([Table::USERS])
-            ->where([
-                'and',
-                ['pending' => true],
-                ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
-            ])
-            ->column();
+        $query = User::find()
+            ->status('pending')
+            ->andWhere(['<', 'users.verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]);
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($userIds as $userId) {
-            $user = $this->getUserById($userId);
+        foreach ($query->each() as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -1067,6 +1059,44 @@ class Users extends Component
         return true;
     }
 
+    /**
+     * Returns whether a user is allowed to impersonate another user.
+     *
+     * @param User $impersonator
+     * @param User $impersonatee
+     * @return bool
+     * @since 3.2.0
+     */
+    public function canImpersonate(User $impersonator, User $impersonatee): bool
+    {
+        // Admins can do whatever they want
+        if ($impersonator->admin) {
+            return true;
+        }
+
+        // Only admins are allowed to impersonate another admin
+        if ($impersonatee->admin) {
+            return false;
+        }
+
+        // impersonateUsers permission is obviously required
+        if (!$impersonator->can('impersonateUsers')) {
+            return false;
+        }
+
+        // Make sure the impersonator has at least all the same permissions as the impersonatee
+        $permissionsService = Craft::$app->getUserPermissions();
+        $impersonatorPermissions = array_flip($permissionsService->getPermissionsByUserId($impersonator->id));
+        $impersonateePermissions = $permissionsService->getPermissionsByUserId($impersonatee->id);
+
+        foreach ($impersonateePermissions as $permission) {
+            if (!isset($impersonatorPermissions[$permission])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Prune a deleted field from user group layout.

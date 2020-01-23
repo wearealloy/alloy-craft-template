@@ -21,7 +21,7 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransformsController extends Controller
 {
@@ -35,6 +35,8 @@ class AssetTransformsController extends Controller
     {
         // All asset transform actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

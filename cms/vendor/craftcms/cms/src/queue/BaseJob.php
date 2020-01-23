@@ -13,7 +13,7 @@ use yii\base\BaseObject;
  * Job is the base class for classes representing jobs in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseJob extends BaseObject implements JobInterface
 {
@@ -29,6 +29,11 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @var int The current progress
      */
     private $_progress;
+
+    /**
+     * @var string|null The current progress label
+     */
+    private $_progressLabel;
 
     // Public Methods
     // =========================================================================
@@ -70,16 +75,25 @@ abstract class BaseJob extends BaseObject implements JobInterface
      *
      * @param \yii\queue\Queue|QueueInterface $queue
      * @param float $progress A number between 0 and 1
+     * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress)
+    protected function setProgress($queue, float $progress, string $label = null)
     {
         $progress = round(100 * $progress);
 
-        if ($progress !== $this->_progress) {
+        if (
+            $progress !== $this->_progress ||
+            ($label !== null && $label !== $this->_progressLabel)
+        ) {
             $this->_progress = $progress;
 
+            // If $label == null, leave the existing value alone
+            if ($label !== null) {
+                $this->_progressLabel = $label;
+            }
+
             if ($queue instanceof QueueInterface) {
-                $queue->setProgress($progress);
+                $queue->setProgress($progress, $label);
             }
         }
     }

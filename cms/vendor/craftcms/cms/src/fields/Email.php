@@ -18,7 +18,7 @@ use yii\db\Schema;
  * Email represents an Email field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Email extends Field implements PreviewableFieldInterface
 {
@@ -31,6 +31,14 @@ class Email extends Field implements PreviewableFieldInterface
     public static function displayName(): string
     {
         return Craft::t('app', 'Email');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
     }
 
     // Properties

@@ -27,7 +27,7 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class VolumesController extends Controller
 {
@@ -41,6 +41,8 @@ class VolumesController extends Controller
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**

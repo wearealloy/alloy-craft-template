@@ -81,8 +81,8 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $command->addArg('-b=', array('v4','v5','v6'));
         $command->addArg('-c', '');
         $command->addArg('some name', null, true);
-        $this->assertEquals("--arg1=x --a --a '中文字äüp' --a 'v'\''1' 'v2' 'v3' -b=v -b='v4' 'v5' 'v6' -c '' 'some name'", $command->getArgs());
-        $this->assertEquals("test --arg1=x --a --a '中文字äüp' --a 'v'\''1' 'v2' 'v3' -b=v -b='v4' 'v5' 'v6' -c '' 'some name'", $command->getExecCommand());
+        $this->assertEquals("--arg1=x '--a' '--a' '中文字äüp' '--a' 'v'\''1' 'v2' 'v3' -b=v '-b'='v4' 'v5' 'v6' '-c' '' 'some name'", $command->getArgs());
+        $this->assertEquals("test --arg1=x '--a' '--a' '中文字äüp' '--a' 'v'\''1' 'v2' 'v3' -b=v '-b'='v4' 'v5' 'v6' '-c' '' 'some name'", $command->getExecCommand());
     }
     public function testCanResetArguments()
     {
@@ -102,14 +102,29 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $command->addArg('-b=','v', true);
         $command->addArg('-b=', array('v4','v5','v6'));
         $command->addArg('some name', null, true);
-        $this->assertEquals("--a --a v --a v1 v2 v3 -b='v' -b=v4 v5 v6 'some name'", $command->getArgs());
+        $this->assertEquals("--a --a v --a v1 v2 v3 '-b'='v' -b=v4 v5 v6 'some name'", $command->getArgs());
+    }
+    public function testCanPreventCommandInjection()
+    {
+        $command = new Command(array(
+            'command' => 'curl',
+        ));
+        $command->addArg('http://example.com --wrong-argument || echo "RCE 1"');
+        $this->assertEquals("'http://example.com --wrong-argument || echo \"RCE 1\"'", $command->getArgs());
+
+        $command = new Command(array(
+            'command' => 'curl',
+        ));
+        $command->addArg('http://example.com');
+        $command->addArg('--header foo --wrong-argument || echo "RCE 2" ||', 'bar');
+        $this->assertEquals("'http://example.com' '--header foo --wrong-argument || echo \"RCE 2\" ||' 'bar'", $command->getArgs());
     }
     public function testCanRunCommandWithArguments()
     {
         $command = new Command('ls');
         $command->addArg('-l');
         $command->addArg('-n');
-        $this->assertEquals("ls -l -n", $command->getExecCommand());
+        $this->assertEquals("ls '-l' '-n'", $command->getExecCommand());
         $this->assertFalse($command->getExecuted());
         $this->assertTrue($command->execute());
         $this->assertTrue($command->getExecuted());
@@ -163,7 +178,7 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $command = new Command('ls');
         $command->addArg('-l');
         $command->addArg('-n');
-        $this->assertEquals("ls -l -n", (string)$command);
+        $this->assertEquals("ls '-l' '-n'", (string)$command);
     }
 
     // Exec
@@ -235,16 +250,64 @@ class CommandTest extends \PHPUnit\Framework\TestCase
     }
     public function testCanRunCommandWithStandardInputStream()
     {
+        $string = str_repeat('01234567890abcdef', 16 * 1024); // 16 * 16 * 1024 = 256KB
         $tmpfile = tmpfile();
-        fwrite($tmpfile, "\t");
+        fwrite($tmpfile, $string);
         fseek($tmpfile, 0);
         $command = new Command('/bin/cat');
-        $command->addArg('-T');
         $command->setStdIn($tmpfile);
         $this->assertTrue($command->execute());
         $this->assertTrue($command->getExecuted());
-        $this->assertEquals("^I", $command->getOutput());
+        $this->assertEquals(strlen($string), strlen($command->getOutput()));
         fclose($tmpfile);
     }
 
+    public function testCanRunCommandWithBigInputAndOutput()
+    {
+        $string = str_repeat('01234567890abcdef', 16 * 1024); // 16 * 16 * 1024 = 256KB
+        $command = new Command('/bin/cat');
+        $command->setStdIn($string);
+        $this->assertTrue($command->execute());
+        $this->assertTrue($command->getExecuted());
+        $this->assertEquals(strlen($string), strlen($command->getOutput()));
+    }
+    public function testCanRunLongRunningCommandWithBigInputAndOutput()
+    {
+        $string = str_repeat('01234567890abcdef', 16 * 1024); // 16 * 16 * 1024 = 256KB
+        $command = new Command('/bin/cat; echo "start" ; sleep 2 ; echo "done"');
+        $command->setStdIn($string);
+        $this->assertTrue($command->execute());
+        $this->assertTrue($command->getExecuted());
+        $expected = $string . "start\ndone";
+        $this->assertEquals(strlen($expected), strlen($command->getOutput()));
+    }
+    public function testCanRunLongRunningCommandWithStandardInputStream()
+    {
+        $string = str_repeat('01234567890abcdef', 16 * 1024); // 16 * 16 * 1024 = 256KB
+        $tmpfile = tmpfile();
+        fwrite($tmpfile, $string);
+        fseek($tmpfile, 0);
+        $command = new Command('/bin/cat; echo "start" ; sleep 2 ; echo "done"');
+        $command->setStdIn($tmpfile);
+        $this->assertTrue($command->execute());
+        $this->assertTrue($command->getExecuted());
+        $expected = $string . "start\ndone";
+        $this->assertEquals(strlen($expected), strlen($command->getOutput()));
+        fclose($tmpfile);
+    }
+
+    public function testCanTerminateLongRunningCommandWithTimeout()
+    {
+        $command = new Command('sleep 5');
+        $command->timeout = 2;
+        $startTime = time();
+        $this->assertFalse($command->execute());
+        $stopTime = time();
+        $this->assertFalse($command->getExecuted());
+        $this->assertNotEquals(0, $command->getExitCode());
+        $this->assertStringStartsWith('Command terminated by signal', $command->getError());
+        $this->assertStringStartsWith('Command terminated by signal', $command->getStdErr());
+        $this->assertEmpty($command->getOutput());
+        $this->assertEquals(2, $stopTime - $startTime);
+    }
 }

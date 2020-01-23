@@ -42,6 +42,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         searching: false,
         searchText: null,
         trashed: false,
+        drafts: false,
         $clearSearchBtn: null,
 
         $statusMenuBtn: null,
@@ -66,6 +67,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         viewMode: null,
         view: null,
         _autoSelectElements: null,
+        $countContainer: null,
+        page: 1,
+        $exportBtn: null,
 
         actions: null,
         actionsHeadHtml: null,
@@ -119,6 +123,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
+            this.$countContainer = this.$container.find('#count-container');
+            this.$exportBtn = this.$container.find('#export-btn');
 
             // Hide sidebar if needed
             if (this.settings.hideSidebar) {
@@ -171,8 +177,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($option.length) {
                     this._setSite($option.data('site-id'));
-                }
-                else {
+                } else {
                     // No site options -- they must not have any site permissions
                     this.settings.criteria = {id: '0'};
                 }
@@ -193,8 +198,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
                     }
                 }
-            }
-            else if (this.settings.criteria && this.settings.criteria.siteId) {
+            } else if (this.settings.criteria && this.settings.criteria.siteId) {
                 this._setSite(this.settings.criteria.siteId);
             } else {
                 this._setSite(Craft.siteId);
@@ -204,11 +208,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ---------------------------------------------------------------------
 
             // Automatically update the elements after new search text has been sitting for a 1/2 second
-            this.addListener(this.$search, 'textchange', $.proxy(function() {
+            this.addListener(this.$search, 'input', $.proxy(function() {
                 if (!this.searching && this.$search.val()) {
                     this.startSearching();
-                }
-                else if (this.searching && !this.$search.val()) {
+                } else if (this.searching && !this.$search.val()) {
                     this.stopSearching();
                 }
 
@@ -267,6 +270,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.sortMenu.on('optionselect', $.proxy(this, '_handleSortChange'));
             }
 
+            // Initialize the Export button
+            // ---------------------------------------------------------------------
+
+            this.addListener(this.$exportBtn, 'click', '_showExportHud');
+
             // Let everyone know that the UI is initialized
             // ---------------------------------------------------------------------
 
@@ -281,7 +289,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Load the first batch of elements!
             // ---------------------------------------------------------------------
 
-            this.updateElements();
+            // Default to whatever page is in the URL
+            this.setPage(Craft.pageNum);
+
+            this.updateElements(true);
         },
 
         afterInit: function() {
@@ -364,8 +375,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.getSourceContainer().replaceWith(response.html);
                     this.initSources();
                     this.selectDefaultSource();
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -387,8 +397,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         width: this.$main.width()
                     });
                 }
-            }
-            else {
+            } else {
                 if (this.$toolbar.hasClass('fixed')) {
                     this.$toolbar.removeClass('fixed');
                     this.$toolbar.css('width', '');
@@ -484,8 +493,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         setInstanceState: function(key, value) {
             if (typeof key === 'object') {
                 $.extend(this.instanceState, key);
-            }
-            else {
+            } else {
                 this.instanceState[key] = value;
             }
 
@@ -506,11 +514,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'undefined') {
                 return this.sourceStates[source];
-            }
-            else if (typeof this.sourceStates[source][key] !== 'undefined') {
+            } else if (typeof this.sourceStates[source][key] !== 'undefined') {
                 return this.sourceStates[source][key];
-            }
-            else {
+            } else {
                 return (typeof defaultValue !== 'undefined' ? defaultValue : null);
             }
         },
@@ -524,8 +530,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (typeof key === 'object') {
                 $.extend(viewState, key);
-            }
-            else {
+            } else {
                 viewState[key] = value;
             }
 
@@ -547,6 +552,33 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         /**
+         * Sets the page number.
+         */
+        setPage: function(page) {
+            if (this.settings.context !== 'index') {
+                return;
+            }
+
+            page = Math.max(page, 1);
+            this.page = page;
+
+            // Update the URL
+            var url = document.location.href
+                .replace(/\?.*$/, '')
+                .replace(new RegExp('/' + Craft.pageTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+$'), '')
+                .replace(/\/+$/, '');
+
+            if (this.page !== 1) {
+                if (Craft.pageTrigger[0] !== '?') {
+                    url += '/';
+                }
+                url += Craft.pageTrigger + this.page;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
          * Returns the data that should be passed to the elementIndex/getElements controller action
          * when loading elements.
          */
@@ -554,8 +586,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var criteria = {
                 siteId: this.siteId,
                 search: this.searchText,
+                offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0
+                trashed: this.trashed ? 1 : 0,
+                drafts: this.drafts ? 1 : 0,
             };
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
@@ -570,7 +604,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 source: this.instanceState.selectedSource,
                 criteria: criteria,
                 disabledElementIds: this.settings.disabledElementIds,
-                viewState: $.extend({}, this.getSelectedSourceState())
+                viewState: $.extend({}, this.getSelectedSourceState()),
+                paginated: this._isViewPaginated() ? 1 : 0,
             };
 
             // Possible that the order/sort isn't entirely accurate if we're sorting by Score
@@ -587,7 +622,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             return params;
         },
 
-        updateElements: function() {
+        updateElements: function(preservePagination) {
             // Ignore if we're not fully initialized yet
             if (!this.initialized) {
                 return;
@@ -603,15 +638,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.$elements.html('');
 
+            if (preservePagination !== true) {
+                this.$countContainer.html('&nbsp;');
+                this.setPage(1);
+            }
+
             var params = this.getViewParams();
 
             Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus === 'success') {
+                    // Have we gone too far?
+                    var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+                    if (this.page > totalPages) {
+                        this.setPage(totalPages);
+                        this.updateElements(true);
+                        return;
+                    }
+
                     this._updateView(params, response);
-                }
-                else {
+                } else {
                     Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                 }
 
@@ -640,8 +687,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (!this._$triggers) {
                 this._createTriggers();
-            }
-            else {
+            } else {
                 this._$triggers.insertAfter(this.$selectAllContainer);
             }
 
@@ -695,8 +741,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         }
 
                         this.afterAction(action, params);
-                    }
-                    else {
+                    } else {
                         Craft.cp.displayError(response.message);
                     }
                 }
@@ -705,7 +750,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         afterAction: function(action, params) {
 
-            // There may be a new background task that needs to be run
+            // There may be a new background job that needs to be run
             Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
@@ -738,16 +783,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         this.$selectAllCheckbox.removeClass('indeterminate');
                         this.$selectAllCheckbox.addClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'true');
-                    }
-                    else {
+                    } else {
                         this.$selectAllCheckbox.addClass('indeterminate');
                         this.$selectAllCheckbox.removeClass('checked');
                         this.$selectAllBtn.attr('aria-checked', 'mixed');
                     }
 
                     this.showActionTriggers();
-                }
-                else {
+                } else {
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
                     this.$selectAllBtn.attr('aria-checked', 'false');
                     this.hideActionTriggers();
@@ -787,8 +830,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
-                }
-                else {
+                } else {
                     this.$sortDirectionsList.find('a').removeClass('disabled');
                 }
             }
@@ -861,8 +903,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 this.$structureSortAttribute.prependTo(this.$sortAttributesList);
-            }
-            else if (this.$structureSortAttribute) {
+            } else if (this.$structureSortAttribute) {
                 this.$structureSortAttribute.removeClass('sel').detach();
             }
 
@@ -942,8 +983,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if ($source) {
                 return this.selectSource($source);
-            }
-            else {
+            } else {
                 return false;
             }
         },
@@ -974,8 +1014,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Does the source specify what to do?
             if (this.$source && Garnish.hasAttr(this.$source, 'data-default-sort')) {
                 return this.$source.attr('data-default-sort').split(':');
-            }
-            else {
+            } else {
                 // Default to whatever's first
                 return [this.$sortAttributesList.find('a:first').data('attr'), 'asc'];
             }
@@ -1094,8 +1133,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.enableElements($element);
-                }
-                else {
+                } else {
                     this.forgetDisabledElementId(id);
                 }
             }
@@ -1110,8 +1148,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if ($element && $element.length) {
                     this.disableElements($element);
-                }
-                else {
+                } else {
                     this.rememberDisabledElementId(id);
                 }
             }
@@ -1141,8 +1178,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is there a predesignated place where buttons should go?
             if (this.settings.buttonContainer) {
                 return $(this.settings.buttonContainer);
-            }
-            else {
+            } else {
                 var $container = $('#button-container');
 
                 if (!$container.length) {
@@ -1293,11 +1329,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var $option = $(ev.selectedOption).addClass('sel');
             this.$statusMenuBtn.html($option.html());
 
+            this.trashed = false;
+            this.drafts = false;
+            this.status = null;
+
             if (Garnish.hasAttr($option, 'data-trashed')) {
                 this.trashed = true;
-                this.status = null;
+            } else if (Garnish.hasAttr($option, 'data-drafts')) {
+                this.drafts = true;
             } else {
-                this.trashed = false;
                 this.status = $option.data('status');
             }
 
@@ -1376,8 +1416,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Is this an attribute or a direction?
             if ($option.parent().parent().is(this.$sortAttributesList)) {
                 this.setSortAttribute($option.data('attr'));
-            }
-            else {
+            } else {
                 this.setSortDirection($option.data('dir'));
             }
 
@@ -1407,7 +1446,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            if (this.trashed || this.searching) {
+            if (this.trashed || this.drafts || this.searching) {
                 $option.addClass('disabled');
                 if (this.getSelectedSortAttribute() === 'structure') {
                     // Temporarily set the sort to the first option
@@ -1452,8 +1491,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         _toggleSource: function($source) {
             if ($source.parent('li').hasClass('expanded')) {
                 this._collapseSource($source);
-            }
-            else {
+            } else {
                 this._expandSource($source);
             }
         },
@@ -1487,6 +1525,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         // View
         // -------------------------------------------------------------------------
 
+        _isViewPaginated: function() {
+            return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
+        },
+
         _updateView: function(params, response) {
             // Cleanup
             // -------------------------------------------------------------
@@ -1500,6 +1542,52 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (this.$selectAllContainer) {
                 // Git rid of the old select all button
                 this.$selectAllContainer.detach();
+            }
+
+            // Update the count text
+            // -------------------------------------------------------------
+
+            this.$countContainer.html('');
+
+            if (!this._isViewPaginated() || response.count <= this.settings.batchSize) {
+                this.$countContainer.text(response.countLabel);
+            } else {
+                var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+                var totalPages = Math.max(Math.ceil(response.count / this.settings.batchSize), 1);
+
+                var $prevBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
+                    'data-icon': 'leftangle',
+                    title: Craft.t('app', 'Previous Page')
+                }).appendTo($paginationContainer);
+                var $nextBtn = $('<div/>', {
+                    'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
+                    'data-icon': 'rightangle',
+                    title: Craft.t('app', 'Next Page')
+                }).appendTo($paginationContainer);
+
+                $('<div/>', {
+                    'class': 'page-info',
+                    text: response.countLabel
+                }).appendTo($paginationContainer);
+
+                if (this.page > 1) {
+                    this.addListener($prevBtn, 'click', function() {
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this.setPage(this.page - 1);
+                        this.updateElements(true);
+                    });
+                }
+
+                if (this.page < totalPages) {
+                    this.addListener($nextBtn, 'click', function() {
+                        this.removeListener($prevBtn, 'click');
+                        this.removeListener($nextBtn, 'click');
+                        this.setPage(this.page + 1);
+                        this.updateElements(true);
+                    });
+                }
             }
 
             // Batch actions setup
@@ -1526,8 +1614,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.addListener(this.$selectAllBtn, 'click', function() {
                         if (this.view.getSelectedElements().length === 0) {
                             this.view.selectAllElements();
-                        }
-                        else {
+                        } else {
                             this.view.deselectAllElements();
                         }
                     });
@@ -1539,8 +1626,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             $(ev.currentTarget).trigger('click');
                         }
                     });
-                }
-                else {
+                } else {
                     // Reset the select all button
                     this.$selectAllCheckbox.removeClass('indeterminate checked');
 
@@ -1566,7 +1652,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.view = this.createView(this.getSelectedViewMode(), {
                 context: this.settings.context,
-                batchSize: this.settings.batchSize,
+                batchSize: this.settings.context !== 'index' || this.getSelectedSortAttribute() === 'structure' ? this.settings.batchSize : null,
                 params: params,
                 selectable: selectable,
                 multiSelect: (this.actions || this.settings.multiSelect),
@@ -1610,12 +1696,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                     this.addListener($form, 'submit', '_handleActionTriggerSubmit');
                     triggers.push($form);
-                }
-                else {
+                } else {
                     if (!action.destructive) {
                         safeMenuActions.push(action);
-                    }
-                    else {
+                    } else {
                         destructiveMenuActions.push(action);
                     }
                 }
@@ -1663,6 +1747,72 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if ($btn) {
                 $btn.data('menubtn').on('optionSelect', $.proxy(this, '_handleMenuActionTriggerSubmit'));
             }
+        },
+
+        _showExportHud: function() {
+            this.$exportBtn.addClass('active');
+
+            var $form = $('<form/>', {
+                'class': 'export-form'
+            });
+
+            var $limitField = Craft.ui.createTextField({
+                label: Craft.t('app', 'Limit'),
+                placeholder: Craft.t('app', 'No limit'),
+                type: 'number',
+                min: 1
+            }).appendTo($form);
+
+            $('<input/>', {
+                type: 'submit',
+                'class': 'btn submit fullwidth',
+                value: Craft.t('app', 'Export')
+            }).appendTo($form)
+
+            var $spinner = $('<div/>', {
+                'class': 'spinner hidden'
+            }).appendTo($form);
+
+            var hud = new Garnish.HUD(this.$exportBtn, $form);
+
+            hud.on('hide', $.proxy(function() {
+                this.$exportBtn.removeClass('active');
+            }, this));
+
+            var submitting = false;
+
+            this.addListener($form, 'submit', function(ev) {
+                ev.preventDefault();
+                if (submitting) {
+                    return;
+                }
+
+                submitting = true;
+                $spinner.removeClass('hidden');
+
+                var params = this.getViewParams();
+                delete params.criteria.limit;
+
+                var limit = parseInt($limitField.find('input').val());
+                if (limit && !isNaN(limit)) {
+                    params.criteria.limit = limit;
+                }
+
+                Craft.postActionRequest('element-indexes/create-export-token', params, $.proxy(function(response, textStatus) {
+                    submitting = false;
+                    $spinner.addClass('hidden');
+
+                    if (textStatus === 'success') {
+                        var params = {};
+                        params[Craft.tokenParam] = response.token;
+                        var url = Craft.getCpUrl('', params);
+                        document.location.href = url;
+                    } else {
+                        Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                    }
+
+                }, this));
+            });
         },
 
         _createMenuTriggerList: function(actions, destructive) {
@@ -1714,4 +1864,3 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             onAfterAction: $.noop
         }
     });
-

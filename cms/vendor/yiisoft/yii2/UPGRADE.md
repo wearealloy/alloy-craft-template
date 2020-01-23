@@ -51,6 +51,44 @@ if you want to upgrade from version A to version C and there is
 version B between A and C, you need to follow the instructions
 for both A and B.
 
+Upgrade from Yii 2.0.30
+-----------------------
+* `yii\helpers\BaseInflector::slug()` now ensures there is no repeating $replacement string occurrences.
+  In case you rely on Yii 2.0.16 - 2.0.30 behavior, consider replacing `Inflector` with your own implementation.
+
+Upgrade from Yii 2.0.20
+-----------------------
+
+* `yii\db\Query::select()` and `addSelect()` now normalize the format that columns are stored in when saving them 
+  to `$this->select`, so code that works directly with that property may need to be modified.
+  
+  For the following code:
+  
+  ```php
+  $a = $query->select('*');
+  $b = $query->select('id, name');
+  ```
+  
+  The value was stored as is i.e.
+  
+  ```php
+  // a
+  ['*']
+  
+  // b
+  ['id', 'name']
+  ``` 
+  
+  Now it is stored as
+  
+  ```php
+  // a
+  ['*' => '*']
+  
+  // b
+  ['id' => 'id', 'name' => 'name']
+  ```
+
 Upgrade from Yii 2.0.16
 -----------------------
 

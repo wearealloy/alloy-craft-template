@@ -18,7 +18,7 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftSupport extends Widget
 {
@@ -53,7 +53,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/buoey.svg');
     }

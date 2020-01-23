@@ -33,7 +33,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoriesController extends Controller
 {
@@ -850,7 +850,9 @@ class CategoriesController extends Controller
         Craft::$app->set('locale', Craft::$app->getI18n()->getLocaleById($site->language));
 
         // Have this category override any freshly queried categories with the same ID/site
-        Craft::$app->getElements()->setPlaceholderElement($category);
+        if ($category->id) {
+            Craft::$app->getElements()->setPlaceholderElement($category);
+        }
 
         $this->getView()->getTwig()->disableStrictVariables();
 

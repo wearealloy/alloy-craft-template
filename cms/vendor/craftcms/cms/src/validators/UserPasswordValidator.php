@@ -15,7 +15,7 @@ use yii\validators\StringValidator;
  * Class UserPasswordValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPasswordValidator extends StringValidator
 {
@@ -84,12 +84,12 @@ class UserPasswordValidator extends StringValidator
 
         if ($this->forceDifferent && $this->currentPassword) {
             $newPassword = $model->$attribute;
-
             if (Craft::$app->getSecurity()->validatePassword($newPassword, $this->currentPassword)) {
                 $this->addError($model, $attribute, $this->sameAsCurrent);
             }
         }
     }
+
 
     /**
      * @inheritdoc

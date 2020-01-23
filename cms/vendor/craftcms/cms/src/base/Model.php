@@ -17,7 +17,7 @@ use craft\helpers\StringHelper;
  * Model base class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Model extends \yii\base\Model
 {
@@ -43,7 +43,8 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the model rules
-     * @see behaviors()
+     * @see rules()
+     * @since 3.1.0
      */
     const EVENT_DEFINE_RULES = 'defineRules';
 
@@ -108,6 +109,10 @@ abstract class Model extends \yii\base\Model
 
         if (property_exists($this, 'dateUpdated')) {
             $attributes[] = 'dateUpdated';
+        }
+
+        if (property_exists($this, 'dateDeleted')) {
+            $attributes[] = 'dateDeleted';
         }
 
         return $attributes;
@@ -190,7 +195,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param string $attribute The attribute name.
      * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0. Use [[getFirstError()]] instead.
+     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute)
     {

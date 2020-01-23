@@ -37,7 +37,7 @@ use yii\db\Exception as DbException;
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Connection extends \yii\db\Connection
 {
@@ -89,6 +89,17 @@ class Connection extends \yii\db\Connection
      * @see setSupportsMb4()
      */
     private $_supportsMb4;
+
+    /**
+     * @var string[]
+     * @see quoteTableName()
+     */
+    private $_quotedTableNames;
+    /**
+     * @var string[]
+     * @see quoteColumnName()
+     */
+    private $_quotedColumnNames;
 
     // Public Methods
     // =========================================================================
@@ -187,6 +198,7 @@ class Connection extends \yii\db\Connection
      * Returns the path for a new backup file.
      *
      * @return string
+     * @since 3.0.38
      */
     public function getBackupFilePath(): string
     {
@@ -333,6 +345,28 @@ class Connection extends \yii\db\Connection
     public function quoteDatabaseName(string $name): string
     {
         return $this->getSchema()->quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteTableName($name)
+    {
+        if (isset($this->_quotedTableNames[$name])) {
+            return $this->_quotedTableNames[$name];
+        }
+        return $this->_quotedTableNames[$name] = parent::quoteTableName($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function quoteColumnName($name)
+    {
+        if (isset($this->_quotedColumnNames[$name])) {
+            return $this->_quotedColumnNames[$name];
+        }
+        return $this->_quotedColumnNames[$name] = parent::quoteColumnName($name);
     }
 
     /**
@@ -487,15 +521,8 @@ class Connection extends \yii\db\Connection
      */
     private function _getTableNameWithoutPrefix(string $table): string
     {
-        $table = $this->getSchema()->getRawTableName($table);
-
-        if ($this->tablePrefix) {
-            if (strpos($table, $this->tablePrefix) === 0) {
-                $table = substr($table, strlen($this->tablePrefix));
-            }
-        }
-
-        return $table;
+        $table = str_replace('%', '', $table);
+        return $this->getSchema()->getRawTableName($table);
     }
 
     /**
@@ -583,19 +610,19 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * TODO: remove this method after the next breakpoint and just use getInfo()->name directly.
+     * TODO: remove this method after the next breakpoint and just use `Craft::$app->getSystemName()` directly.
      *
      * @return string
      */
     private function _getFixedSystemName(): string
     {
-        try {
+        if ($this->columnExists(Table::INFO, 'siteName')) {
             return (new Query())
                 ->select(['siteName'])
                 ->from([Table::INFO])
-                ->column()[0];
-        } catch (\Throwable $e) {
-            return Craft::$app->getSystemName();
+                ->scalar($this) ?: 'CraftCMS';
         }
+
+        return Craft::$app->getSystemName();
     }
 }

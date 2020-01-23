@@ -16,7 +16,7 @@ use craft\web\assets\feed\FeedAsset;
  * Feed represents a Feed dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Feed extends Widget
 {
@@ -34,7 +34,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/feed.svg');
     }

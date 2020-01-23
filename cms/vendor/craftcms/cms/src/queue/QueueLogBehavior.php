@@ -16,7 +16,7 @@ use yii\queue\ExecEvent;
  * Queue Log Behavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueueLogBehavior extends VerboseBehavior
 {
@@ -91,18 +91,20 @@ class QueueLogBehavior extends VerboseBehavior
         $logDispatcher = Craft::$app->getLog();
 
         foreach ($logDispatcher->targets as $target) {
-            // Don't log global vars
-            $target->logVars = [];
-
-            // Set log target to queue.log
             if ($target instanceof FileTarget) {
+                // Log to queue.log
                 $target->logFile = Craft::getAlias('@storage/logs/queue.log');
-            }
 
-            // Prevent verbose system logs
-            if (!YII_DEBUG) {
-                $target->except = ['yii\*'];
-                $target->setLevels(['info', 'warning', 'error']);
+                // Don't log global vars
+                $target->logVars = [];
+
+                // Prevent verbose system logs
+                if (!YII_DEBUG) {
+                    $target->except = ['yii\*'];
+                    $target->setLevels(['info', 'warning', 'error']);
+                }
+
+                break;
             }
         }
     }

@@ -21,7 +21,7 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructuresController extends Controller
 {
@@ -87,6 +87,8 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
+
+        parent::init();
     }
 
     /**
