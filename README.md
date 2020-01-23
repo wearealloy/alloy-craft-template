@@ -1,4 +1,4 @@
-*As for 05/29/2019 this workflow is optimized to work with Craft CMS  [3.0.41](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip) (Solo Version)
+*As for 05/29/2019 this workflow is optimized to work with Craft CMS  [3.3.20.1](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip) (Solo Version)
 If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.*
 
 *Foundation version: v6.5.0-rc.4*
