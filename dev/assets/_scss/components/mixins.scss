@@ -1,0 +1,61 @@
+@mixin transitionFadeInUp($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: translateY(7%);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: translateY(0%);
+    }
+}
+@mixin transitionFadeInRotationLeft($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: translateY(7%) translateX(15%) rotate(12deg);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: translateY(0%) translateX(0%) rotate(0deg);
+    }
+}
+@mixin transitionFadeInLeft($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: translateX(15%);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: translateX(0%);
+    }
+}
+@mixin transitionFadeInRotationRight($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: translateY(7%) translateX(-15%) rotate(-12deg);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: translateY(0%) translateX(0%) rotate(0deg);
+    }
+}
+@mixin transitionFadeInRight($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: translateX(-15%);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: translateX(0%);
+    }
+}
+@mixin transitionFadeIn($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transition: opacity $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+    }
+}
+@mixin transitionFadeScale($transitionDuration, $transitionDelay){
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity $transitionDuration $transitionDelay ease, transform $transitionDuration $transitionDelay ease;
+    &.animated{
+        opacity: 1;
+        transform: scale(1);
+    }
+}

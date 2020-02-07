@@ -1,11 +1,22 @@
-// import SCSS|SASS|CSS files here using @import
+// import SCSS|SASS files here using @import
 
 // vendor imports
-@import 'vendor/foundation.min';
 @import 'vendor/slick';
 @import 'vendor/slick-theme';
 
 
 
 // source imports
+@import 'components/mixins';
 @import 'components/global';
+
+// fragments
+@import 'components/fragments/typography.scss';
+@import 'components/fragments/forms.scss';
+@import 'components/fragments/buttons.scss';
+
+// navigation
+@import 'components/navigation/main-nav.scss';
+@import 'components/navigation/main-footer.scss';
+
+//section

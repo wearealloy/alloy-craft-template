@@ -1,0 +1,194 @@
+/*-----------------------------------*\
+	FONT SIZE PALETTE
+\*-----------------------------------*/
+.has-xs-font-size {
+	font-size: 14px;
+}
+
+.has-small-font-size {
+	font-size: 16px;
+}
+
+.has-medium-font-size {
+	font-size: 18px;
+}
+
+.has-large-font-size {
+	font-size: 24px;
+}
+
+.has-xl-font-size {
+	font-size: 32px;
+}
+
+/*-----------------------------------*\
+	HEADER
+\*-----------------------------------*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin-top: 1.5rem;
+	margin-bottom: 1rem;
+	letter-spacing: 0;
+	font-family: $ff-sansSerif;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+h1,
+.h1 {
+	font-size: 40px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 70px;
+	}
+}
+
+h2,
+.h2 {
+	font-size: 32px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 55px;
+	}
+}
+
+h3,
+.h3 {
+	font-size: 26px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 35px;
+	}
+}
+
+h4,
+.h4 {
+	font-size: 23px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 26px;
+	}
+}
+
+h5,
+.h5 {
+	font-size: 16px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 25px;
+	}
+}
+
+h6,
+.h6 {
+	font-size: 14px;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 16px;
+	}
+}
+
+/*-----------------------------------*\
+	PARAGRAPH
+\*-----------------------------------*/
+p {
+	font-size: 15px;
+	line-height: 1.5;
+	font-family: $ff-sansSerif;
+
+	@media(min-width: $tablet-BP) {
+		font-size: 18px;
+	}
+
+	&.is-large {
+		font-size: 18px;
+
+		@media(min-width: $tablet-BP) {
+			font-size: 28px;
+		}
+	}
+
+	&.is-extra-large {
+		font-size: 20px;
+		line-height: 1.5;
+
+		@media(min-width: $tablet-BP) {
+			font-size: 50px;
+			line-height: 1.2;
+		}
+	}
+
+	&.is-large-bold {
+		font-size: 17px;
+		font-weight: 700;
+
+		@media(min-width: $tablet-BP) {
+			font-size: 28px;
+		}
+	}
+
+	&.is-serif {
+		font-family: $ff-serif;
+	}
+
+	&.is-serif-large {
+		font-family: $ff-serif;
+		font-size: 15px;
+
+		@media(min-width: $tablet-BP) {
+			font-size: 20px;
+		}
+	}
+
+	&.is-serif-extra-large {
+		font-family: $ff-serif;
+		font-size: 21px;
+
+		@media(min-width: $tablet-BP) {
+			font-size: 50px;
+		}
+	}
+
+	&.is-bold {
+		font-weight: bold;
+	}
+
+}
+a, p a {
+	color: $black;
+	text-decoration: underline;
+
+	// &:hover,
+	// &:focus {
+	// 	background-color: var(--Mint);
+	// }
+}
+
+/*-----------------------------------*\
+	LIST
+\*-----------------------------------*/
+
+
+/*-----------------------------------*\
+	HORIZONTAL RULE
+\*-----------------------------------*/
+hr {
+	margin: 3em auto;
+	height: 3px;
+	background-color: $black;
+	border: none;
+
+	&.is-style-wide {
+		margin: 6em auto;
+		max-width: 1024px;
+	}
+
+	&.is-style-dots::before {
+		font-weight: bold;
+		font-size: 35px;
+	}
+}

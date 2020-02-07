@@ -1,4 +1,4 @@
-*As for 05/29/2019 this workflow is optimized to work with Craft CMS  [3.3.20.1](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip) (Solo Version)
+*As for 01/22/2020 this workflow is optimized to work with Craft CMS  [3.3.20.1](https://download.craftcdn.com/craft/3.0/Craft-3.0.41.zip) (Solo Version)
 If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.*
 
 *Foundation version: v6.5.0-rc.4*
@@ -40,8 +40,6 @@ The development folder structure has to be the following:
 │   │   └── img
 │   │       └── readme.md
 │   ├── entry.js
-│   ├── media
-│   │   └── readme.md
 │   └── templates
 │       ├── _layout.html
 │       └── index.html
@@ -92,6 +90,7 @@ The cases are the following
      - **Remember** to point the vhost to ```root/cms/web/``` folder!
 4. Edit `.env` file inside `project-name/cms/`. Fill the `db_user`, `db_password`, `db_database` variables.
 5. Open ```gulpfile.js``` located in the root folder of the project, locate the variable ```vHost``` on line 22. Edit it and add the vHost url you are using to run the local environment.
+6. Run the Setup Wizard In your web browser, go to ```http://<Hostname>/index.php?p=admin/install``` (substituting <Hostname> with your web server’s host name).
 
 ------
 
