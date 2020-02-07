@@ -1,0 +1,28 @@
+<meta charset="utf-8" />
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- META -->
+<title>{% if seoTitle is defined and seoTitle is not empty %}{{seoTitle}} -
+    {{ siteName }}{% else %}{{siteName}}{% endif %}</title>
+<meta name="description"
+    content="{% if seoDescription is defined and seoDescription is not empty %}{{seoDescription}}{% else %}{{globalSeo.seoDescription}}{% endif %}">
+<meta name="author" content="{% if seoAuthor is defined %}{{seoAuthor}}{% else %}{{globalSeo.seoAuthor}}{% endif %}">
+<meta name="copyright" content="{{globalSeo.seoCopyright}}">
+<link rel="canonical" href="{{craft.app.request.absoluteUrl}}">
+<meta property="og:site_name" content="{{siteName}}">
+<meta property="og:type"
+    content="{% if craft.app.request.segments|first == 'insights' %}article{% else %}website{%endif%}">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="{{craft.app.request.absoluteUrl}}">
+<meta property="og:title"
+    content="{% if seoTitle is defined and seoTitle is not empty %}{{seoTitle}} - {{ siteName }} {% else %}{{globalSeo.seoTitle}}{% endif %}">
+<meta property="og:description"
+    content="{% if seoDescription is defined and seoDescription is not empty %}{{seoDescription}}{% else %}{{globalSeo.seoDescription}}{% endif %}">
+<meta property="og:image"
+    content="{% if seoImage is defined and seoImage|length > 0 %}{{ siteUrl|slice(0,-1) }}{{seoImage.url}}{% elseif globalSeo.seoImage|length > 0 %}{{ siteUrl|slice(0,-1) }}{{globalSeo.seoImage.one().url}}{% endif %}">
+<!-- END META -->
+
+<!-- Favicon -->
+
+<!-- END Favicon -->
