@@ -187,7 +187,7 @@ gulp.task('browserSync', function() {
 
 gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'revRewrite', 'browserSync'], function(){
   gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['cleanCss','sass', 'copyHTML', 'revRewrite']);
-  gulp.watch('dev/assets/_js/**/*.js', ['scripts', 'copyHTML' , 'revRewriteJs']);
+  gulp.watch('dev/assets/_js/**/*.js', ['scripts', 'copyHTML' , 'revRewrite']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
   gulp.watch('dev/assets/fonts/**/*.+(eot|svg|ttf|woff)')
   gulp.watch('cms/web/media/**/*.+(png|jpg|gif|svg|mp4)', ['media']);
