@@ -19,7 +19,7 @@
 
   //global variables
 
-  var vHost = 'vHost address here';
+  var vHost = 'VHOST url here';
 
 //*************************************
 
@@ -70,6 +70,7 @@ let webpackConfig = {
   }
 }
 
+
 gulp.task('scripts', function() {
   return gulp.src('dev/assets/_js/main.js')
     .pipe(plumber())
@@ -78,7 +79,13 @@ gulp.task('scripts', function() {
       .pipe(webpackStream(webpackConfig, webpack2))
       .pipe((mode.production(uglify())))
     .pipe(sourcemaps.write())
+    // 
+    .pipe(rev())
     .pipe(gulp.dest(pathToCms.js))
+    .pipe(rev.manifest())
+    .pipe(gulp.dest(pathToCms.js))
+    // 
+    // .pipe(gulp.dest(pathToCms.js))
     .pipe(browserSync.reload({
       stream: true
     }))
@@ -100,9 +107,9 @@ gulp.task('templates', function() {
     }))
 });
 
-gulp.task('revRewrite', ['sass', 'copyHTML'], function() {
+gulp.task('revRewrite', ['sass', 'scripts', 'copyHTML'], function() {
   console.log('runninr rewrite')
-  const manifest = gulp.src('cms/web/assets/css/rev-manifest.json');
+  const manifest = gulp.src(['cms/web/assets/css/rev-manifest.json', 'cms/web/assets/js/rev-manifest.json']);
  
   return gulp.src('cms/templates/_layout.html')
     .pipe(revRewrite({ manifest }))
@@ -166,10 +173,6 @@ gulp.task('cleanCss', function(){
  return del.sync(['cms/web/assets/css/']);
 });
 
-// gulp.task('cleanDev', function(){
-//  return del.sync(['dev']);
-// });
-
 gulp.task('browserSync', function() {
   browserSync.init({
       // baseDir: 'cms',
@@ -179,27 +182,16 @@ gulp.task('browserSync', function() {
   });
 });
 
-// gulp.task('copyDevFiles', function(){
-//   return gulp.src('dev/**/*')
-//     .pipe(gulp.dest(pathToCms.devFiles))
-// });
-
-
-// gulp.task('copyCMSFiles', function(){
-//   return gulp.src('cms/dev_files/**/*')
-//     .pipe(gulp.dest('dev'))
-// });
-
 
 // Taks to run on command line
 
 gulp.task('watch', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyFonts', 'copyHTML', 'revRewrite', 'browserSync'], function(){
   gulp.watch('dev/assets/_scss/**/*.+(css|scss|sass)', ['cleanCss','sass', 'copyHTML', 'revRewrite']);
-  gulp.watch('dev/assets/_js/**/*.js', ['scripts']);
+  gulp.watch('dev/assets/_js/**/*.js', ['scripts', 'copyHTML' , 'revRewriteJs']);
   gulp.watch('dev/assets/img/**/*.+(png|jpg|gif|svg)', ['img']);
   gulp.watch('dev/assets/fonts/**/*.+(eot|svg|ttf|woff)')
   gulp.watch('cms/web/media/**/*.+(png|jpg|gif|svg|mp4)', ['media']);
-  gulp.watch('dev/templates/**/*.html', ['copyHTML', 'revRewrite']);
+  gulp.watch('dev/templates/**/*.html', ['copyHTML', 'revRewrite', 'revRewrite']);
 });
 
 gulp.task('build', ['clean', 'sass', 'scripts', 'copyScripts', 'img', 'media', 'copyHTML', 'copyFonts', 'revRewrite']);
