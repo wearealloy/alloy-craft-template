@@ -46,7 +46,7 @@
   "dependencies": {
     "foundation-sites": "^6.5.0",
     "gulp-chmod": "^2.0.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "slick-carousel": "^1.8.1",
     "waypoints": "^4.0.1",
     "what-input": "^5.1.2"
