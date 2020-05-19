@@ -7,16 +7,16 @@
 
 
 // source imports
-@import 'components/mixins';
-@import 'components/global';
+@import 'global';
 
 // fragments
-@import 'components/fragments/typography.scss';
-@import 'components/fragments/forms.scss';
-@import 'components/fragments/buttons.scss';
+@import 'fragments/mixins';
+@import 'fragments/typography.scss';
+@import 'fragments/forms.scss';
+@import 'fragments/buttons.scss';
 
 // navigation
-@import 'components/navigation/main-nav.scss';
-@import 'components/navigation/main-footer.scss';
+@import 'navigation/main-nav.scss';
+@import 'navigation/main-footer.scss';
 
 //section
