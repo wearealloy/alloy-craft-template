@@ -37,18 +37,12 @@ use yii\web\ServerErrorHttpException;
  */
 class AppController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -192,7 +186,7 @@ class AppController extends Controller
      * plugin, & content migrations, and syncs `project.yaml` changes in one go.
      *
      * This action can be used as a post-deploy webhook with site deployment
-     * services (like [DeployBot](https://deploybot.com/)) to minimize site
+     * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      *
      * @throws ServerErrorException if something went wrong
@@ -307,7 +301,7 @@ class AppController extends Controller
     }
 
     /**
-     * Loads any CP alerts.
+     * Returns any alerts that should be displayed in the control panel.
      *
      * @return Response
      */
@@ -325,7 +319,7 @@ class AppController extends Controller
     }
 
     /**
-     * Shuns a CP alert for 24 hours.
+     * Shuns a control panel alert for 24 hours.
      *
      * @return Response
      */
@@ -346,7 +340,7 @@ class AppController extends Controller
             ]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -449,9 +443,6 @@ class AppController extends Controller
         return $this->asJson(1);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
      *
@@ -509,7 +500,8 @@ class AppController extends Controller
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 
-        $allPluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        $pluginsService = Craft::$app->getPlugins();
+        $allPluginInfo = $pluginsService->getAllPluginInfo();
 
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
@@ -525,7 +517,7 @@ class AppController extends Controller
                     if (
                         !isset($allPluginInfo[$handle]) ||
                         !$allPluginInfo[$handle]['licenseKey'] ||
-                        $allPluginInfo[$handle]['licenseKey'] === $pluginLicenseInfo['key']
+                        $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
                             'edition' => null,
@@ -564,7 +556,7 @@ class AppController extends Controller
                 'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginInfo['licenseKey'],
+                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Craft::parseEnv($pluginInfo['licenseKey'])),
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\behaviors\SessionBehavior;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -22,6 +23,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
+use craft\web\Request;
 use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\Session;
@@ -44,16 +46,33 @@ use yii\web\JsonParser;
  */
 class App
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
     private static $_iconv;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
+     *
+     * @param string $name The environment variable name
+     * @return string|array|false The environment variable value
+     * @since 3.4.18
+     */
+    public static function env(string $name)
+    {
+        return $_SERVER[$name] ?? getenv($name);
+    }
+
+    /**
+     * Returns whether Craft is running within [Nitro](https://getnitro.sh).
+     *
+     * @return bool
+     * @since 3.4.19
+     */
+    public static function isNitro(): bool
+    {
+        return static::env('CRAFT_NITRO') === '1';
+    }
 
     /**
      * Returns an array of all known Craft editions’ IDs.
@@ -278,8 +297,8 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, and gives
-     * the script an unlimited amount of time to execute.
+     * <config:phpMaxMemoryLimit> config setting, and gives the script an
+     * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain()
     {
@@ -346,6 +365,17 @@ class App
         return $trace;
     }
 
+    /**
+     * Returns whether Craft is running on an environment with ephemeral storage.
+     *
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isEphemeral(): bool
+    {
+        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+    }
+
     // App component configs
     // -------------------------------------------------------------------------
 
@@ -401,7 +431,9 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+
+        if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
@@ -414,17 +446,17 @@ class App
 
         return [
             'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
+            'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
             'schemaMap' => [
-                $dbConfig->driver => $schemaConfig,
+                $driver => $schemaConfig,
             ],
             'commandMap' => [
-                $dbConfig->driver => Command::class,
+                $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
@@ -469,6 +501,7 @@ class App
             'from' => [
                 Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
             ],
+            'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
@@ -524,7 +557,8 @@ class App
         }
 
         // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-        if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+        if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
         }
 
@@ -559,6 +593,7 @@ class App
 
         return [
             'class' => Session::class,
+            'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
             'authAccessParam' => $stateKeyPrefix . '__auth_access',
             'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
@@ -581,7 +616,7 @@ class App
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
             $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl('login');
+            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
@@ -680,7 +715,11 @@ class App
         ];
 
         // Default to JSON responses if running in headless mode
-        if (Craft::$app->getRequest()->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
+        if (
+            Craft::$app->has('request', true) &&
+            Craft::$app->getRequest()->getIsSiteRequest() &&
+            Craft::$app->getConfig()->getGeneral()->headlessMode
+        ) {
             $config['format'] = WebResponse::FORMAT_JSON;
         }
 

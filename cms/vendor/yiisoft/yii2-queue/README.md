@@ -8,7 +8,7 @@
 
 An extension for running tasks asynchronously via queues.
 
-It supports queues based on **DB**, **Redis**, **RabbitMQ**, **AMQP**, **Beanstalk** and **Gearman**.
+It supports queues based on **DB**, **Redis**, **RabbitMQ**, **AMQP**, **Beanstalk**, **ActiveMQ** and **Gearman**.
 
 Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
@@ -19,21 +19,11 @@ Documentation is at [docs/guide/README.md](docs/guide/README.md).
 Installation
 ------------
 
-The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
-
-Either run
+The preferred way to install this extension is through [composer](http://getcomposer.org/download/):
 
 ```
 php composer.phar require --prefer-dist yiisoft/yii2-queue
 ```
-
-or add
-
-```
-"yiisoft/yii2-queue": "~2.0.0"
-```
-
-to the require section of your `composer.json` file.
 
 Basic Usage
 -----------

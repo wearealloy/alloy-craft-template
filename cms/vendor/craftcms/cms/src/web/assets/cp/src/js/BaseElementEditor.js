@@ -8,6 +8,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -117,7 +119,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 this.$form = $('<div/>');
                 this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
 
-                this.updateForm(response);
+                this.updateForm(response, true);
 
                 this.onCreateForm(this.$form);
 
@@ -135,9 +137,11 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
                         bodyClass: 'body elementeditor',
                         closeOtherHUDs: false,
-                        onShow: $.proxy(this, 'onShowHud'),
-                        onHide: $.proxy(this, 'onHideHud'),
-                        onSubmit: $.proxy(this, 'saveElement')
+                        hideOnEsc: false,
+                        hideOnShadeClick: false,
+                        onShow: this.onShowHud.bind(this),
+                        onHide: this.onHideHud.bind(this),
+                        onSubmit: this.saveElement.bind(this),
                     });
 
                     this.hud.$hud.data('elementEditor', this);
@@ -186,7 +190,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    this.updateForm(response);
+                    this.updateForm(response, true);
                 }
 
                 if (callback) {
@@ -195,16 +199,18 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }, this));
         },
 
-        updateForm: function(response) {
+        updateForm: function(response, refreshInitialData) {
             this.siteId = response.siteId;
-
             this.$fieldsContainer.html(response.html);
+
+            if (refreshInitialData !== false) {
+                this.deltaNames = response.deltaNames;
+            }
 
             // Swap any instruction text with info icons
             var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
             for (var i = 0; i < $instructions.length; i++) {
-
                 $instructions.eq(i)
                     .replaceWith($('<span/>', {
                         'class': 'info',
@@ -217,6 +223,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+
+                if (refreshInitialData) {
+                    this.initialData = this.hud.$body.serialize();
+                }
             }, this));
         },
 
@@ -234,6 +244,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -253,11 +265,17 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             }
                         }
 
+                        if (this.settings.elementType && Craft.elementTypeNames[this.settings.elementType]) {
+                            Craft.cp.displayNotice(Craft.t('app', '{type} saved.', {
+                                type: Craft.elementTypeNames[this.settings.elementType][0],
+                            }));
+                        }
+
                         this.closeHud();
                         this.onSaveElement(response);
                     }
                     else {
-                        this.updateForm(response);
+                        this.updateForm(response, false);
                         Garnish.shake(this.hud.$hud);
                     }
                 }
@@ -273,6 +291,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         // -------------------------------------------------------------------------
 
         onShowHud: function() {
+            Garnish.shortcutManager.registerShortcut({
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+            }, this.saveElement.bind(this));
             this.settings.onShowHud();
             this.trigger('showHud');
         },

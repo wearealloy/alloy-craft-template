@@ -29,9 +29,6 @@ use yii\db\Schema;
  */
 class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -48,9 +45,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         return DateTime::class . '|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
@@ -65,9 +59,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -113,9 +104,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
         return $rules;
@@ -215,14 +206,19 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            $formatter = Craft::$app->getFormatter();
-
-            /** @var DateTime $value */
-            return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
+        if (!$value) {
+            return '';
         }
 
-        return '';
+        if ($this->showDate && $this->showTime) {
+            return Craft::$app->getFormatter()->asDatetime($value, Locale::LENGTH_SHORT);
+        }
+
+        if ($this->showDate) {
+            return Craft::$app->getFormatter()->asDate($value, Locale::LENGTH_SHORT);
+        }
+
+        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**

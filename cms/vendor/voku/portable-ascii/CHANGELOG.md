@@ -1,5 +1,24 @@
 # Changelog
 
+### 1.4.10 (2020-03-13)
+
+- ASCII::to_ascii() -> fix extra symbol handling in the regex
+- ASCII::to_ascii() -> fix for languages with multi-length-special-char (e.g. Greek -> 'ει' => 'i')
+
+### 1.4.9 (2020-03-06)
+
+- ASCII::to_slugify() -> fix php warning from empty "separator"
+
+### 1.4.8 (2020-02-06)
+
+- small optimization for "ASCII::to_ascii()" performance
+
+### 1.4.7 (2020-01-27)
+
+- fix possible wrong type from "getDataIfExists()" -> e.g. a bug reported where "/data/" was modified
+- inline variables
+- do not use "=== true" for "bool"-types
+
 ### 1.4.6 (2019-12-23)
 
 - optimize "ASCII::to_ascii()" performance

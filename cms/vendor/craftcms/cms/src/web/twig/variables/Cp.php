@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
@@ -20,29 +21,23 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 
 /**
- * CP functions
+ * Control panel functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Cp extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
-     * @event RegisterCpNavItemsEvent The event that is triggered when registering Control Panel nav items.
+     * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
      */
     const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
 
     /**
-     * @event RegisterCpSettingsEvent The event that is triggered when registering Control Panel nav items.
+     * @event RegisterCpSettingsEvent The event that is triggered when registering control panel nav items.
      * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the Craft ID account URL.
@@ -55,9 +50,9 @@ class Cp extends Component
     }
 
     /**
-     * Returns the Control Panel nav items.
+     * Returns the control panel nav items.
      *
-     * Each CP nav item should be defined by an array with the following keys:
+     * Each control panel nav item should be defined by an array with the following keys:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
@@ -85,7 +80,7 @@ class Cp extends Component
      * ]
      * ```
      *
-     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
      *
      * ```twig
      * {% set selectedSubnavItem = 'orders' %}
@@ -162,6 +157,36 @@ class Cp extends Component
             }
         }
 
+        if ($isAdmin) {
+            if ($craftPro && $generalConfig->enableGql) {
+                $subNavItems = [
+                    'explore' => [
+                        'label' => Craft::t('app', 'Explore'),
+                        'url' => 'graphql',
+                    ],
+                ];
+
+                if ($generalConfig->allowAdminChanges) {
+                    $subNavItems['schemas'] = [
+                        'label' => Craft::t('app', 'Schemas'),
+                        'url' => 'graphql/schemas',
+                    ];
+                }
+
+                $subNavItems['tokens'] = [
+                    'label' => Craft::t('app', 'Tokens'),
+                    'url' => 'graphql/tokens',
+                ];
+
+                $navItems[] = [
+                    'label' => Craft::t('app', 'GraphQL'),
+                    'url' => 'graphql',
+                    'icon' => '@app/icons/graphql.svg',
+                    'subnav' => $subNavItems
+                ];
+            }
+        }
+
         $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         if (!empty($utilities)) {
@@ -181,24 +206,6 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro && $generalConfig->enableGql) {
-                $navItems[] = [
-                    'label' => Craft::t('app', 'GraphQL'),
-                    'url' => 'graphql',
-                    'icon' => '@app/icons/graphql.svg',
-                    'subnav' => [
-                        'explore' => [
-                            'label' => Craft::t('app', 'Explore'),
-                            'url' => 'graphql',
-                        ],
-                        'schemas' => [
-                            'label' => Craft::t('app', 'Schemas'),
-                            'url' => 'graphql/schemas',
-                        ]
-                    ]
-                ];
-            }
-
             if ($generalConfig->allowAdminChanges) {
                 $navItems[] = [
                     'url' => 'settings',
@@ -343,7 +350,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns whether the CP alerts are cached.
+     * Returns whether the control panel alerts are cached.
      *
      * @return bool
      */
@@ -354,7 +361,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns an array of alerts to display in the CP.
+     * Returns an array of alerts to display in the control panel.
      *
      * @return array
      */
@@ -378,11 +385,13 @@ class Cp extends Component
         $security = Craft::$app->getSecurity();
 
         $envSuggestions = [];
-        foreach (array_keys($_ENV) as $var) {
-            $envSuggestions[] = [
-                'name' => '$' . $var,
-                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var), false))
-            ];
+        foreach (array_keys($_SERVER) as $var) {
+            if (is_string($var) && is_string($env = App::env($var))) {
+                $envSuggestions[] = [
+                    'name' => '$' . $var,
+                    'hint' => $security->redactIfSensitive($var, Craft::getAlias($env, false))
+                ];
+            }
         }
         ArrayHelper::multisort($envSuggestions, 'name');
         $suggestions[] = [
@@ -448,7 +457,17 @@ class Cp extends Component
             return [];
         }
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+        $directory = new \RecursiveDirectoryIterator($root);
+
+        $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
+            // Skip hidden files and directories, as well as node_modules/ folders
+            if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
+                return false;
+            }
+            return true;
+        });
+
+        $iterator = new \RecursiveIteratorIterator($filter);
         /** @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];

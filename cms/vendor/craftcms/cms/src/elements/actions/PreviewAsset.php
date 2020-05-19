@@ -19,16 +19,10 @@ use craft\helpers\Json;
  */
 class PreviewAsset extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -63,9 +57,7 @@ class PreviewAsset extends ElementAction
         batch: false,
         validateSelection: function(\$selectedItems)
         {
-            var \$element = \$selectedItems.find('.element');
-
-            return \$element.length === 1;
+            return \$selectedItems.length === 1;
         },
         activate: function(\$selectedItems)
         {

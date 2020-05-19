@@ -23,7 +23,6 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -40,9 +39,6 @@ use ZipArchive;
  */
 class DashboardController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Dashboard index.
      *
@@ -306,9 +302,7 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws ErrorException
      * @throws BadRequestHttpException
-     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -404,7 +398,7 @@ class DashboardController extends Controller
                             'except' => ['web-404s.log'],
                             'recursive' => false
                         ]);
-                    } catch (ErrorException $e) {
+                    } catch (InvalidArgumentException $e) {
                         Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }
@@ -495,9 +489,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
@@ -537,6 +528,7 @@ class DashboardController extends Controller
             'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
+            'subtitle' => $widget->getSubtitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,

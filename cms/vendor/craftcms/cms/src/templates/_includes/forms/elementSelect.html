@@ -24,7 +24,7 @@
         {% endfor %}
     </div>
 
-    <div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
+    <div class="btn add icon dashed rounded">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
 </div>
 
 {% set jsSettings = {
@@ -34,6 +34,7 @@
     sources: sources,
     criteria: criteria,
     sourceElementId: sourceElementId,
+    disabledElementIds: disabledElementIds ?? null,
     viewMode: viewMode,
     limit: limit ?? null,
     showSiteMenu: showSiteMenu ?? false,
@@ -41,6 +42,7 @@
     fieldId: fieldId,
     sortable: sortable,
     prevalidate: prevalidate,
+    modalSettings: modalSettings ?? {},
 } %}
 
 {% js %}

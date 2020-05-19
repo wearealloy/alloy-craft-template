@@ -19,7 +19,7 @@ use yii\base\Behavior;
  *
  * @property ElementInterface|Element $owner
  * @property-read ElementInterface|Element $source
- * @property-read User $creator
+ * @property-read User|null $creator
  * @property-read string $revisionLabel
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
@@ -70,7 +70,7 @@ class RevisionBehavior extends Behavior
      * Returns the revision’s source element.
      *
      * @return ElementInterface
-     * @deprecated in 3.2.9. Use [[ElementInterface::getSource()]] instead.
+     * @deprecated in 3.2.9. Use [[\craft\helpers\ElementHelper::sourceElement()]] instead.
      */
     public function getSource(): ElementInterface
     {

@@ -29,9 +29,6 @@ use yii\web\Response;
  */
 class TagsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Called before displaying the tag settings index page.
      *
@@ -243,7 +240,6 @@ class TagsController extends Controller
      */
     public function actionCreateTag(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');

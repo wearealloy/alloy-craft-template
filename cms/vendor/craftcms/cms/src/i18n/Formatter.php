@@ -22,9 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class Formatter extends \yii\i18n\Formatter
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The locale’s date/time formats.
      */
@@ -64,9 +61,6 @@ class Formatter extends \yii\i18n\Formatter
      * @var array|null The locale's currency symbols.
      */
     public $currencySymbols;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -219,7 +213,7 @@ class Formatter extends \yii\i18n\Formatter
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            return Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
         }
 
         // Otherwise, just return the local date.
@@ -292,8 +286,14 @@ class Formatter extends \yii\i18n\Formatter
         return parent::asText($value);
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function asShortSize($value, $decimals = null, $options = [], $textOptions = [])
+    {
+        return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
+    }
 
     /**
      * Formats a given date/time.

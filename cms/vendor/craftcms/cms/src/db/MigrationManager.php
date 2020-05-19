@@ -35,9 +35,6 @@ class MigrationManager extends Component
     const TYPE_PLUGIN = 'plugin';
     const TYPE_CONTENT = 'content';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      */
@@ -67,9 +64,6 @@ class MigrationManager extends Component
      * @var string The migrations table name
      */
     public $migrationTable = Table::MIGRATIONS;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -245,6 +239,9 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
+
         $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
@@ -298,6 +295,9 @@ class MigrationManager extends Component
             $success = false;
         }
         $time = microtime(true) - $start;
+
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
 
         $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
@@ -439,9 +439,6 @@ class MigrationManager extends Component
 
         return $migrations;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Ensures that [[pluginId]] is set properly.

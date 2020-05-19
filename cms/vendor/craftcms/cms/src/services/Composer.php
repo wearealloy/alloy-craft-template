@@ -35,9 +35,6 @@ use yii\base\Exception;
  */
 class Composer extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -63,9 +60,6 @@ class Composer extends Component
      * @var string[]|null
      */
     private $_composerClasses;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the path to composer.json.
@@ -340,20 +334,17 @@ class Composer extends Component
         $this->_composerClasses[] = $className;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
      */
     protected function _ensureHomeVar()
     {
-        if (getenv('COMPOSER_HOME') !== false) {
+        if (App::env('COMPOSER_HOME') !== false) {
             return;
         }
 
         $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (getenv($alt) !== false) {
+        if (App::env($alt) !== false) {
             return;
         }
 

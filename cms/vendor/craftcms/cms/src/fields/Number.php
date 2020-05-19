@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
@@ -24,9 +25,6 @@ use craft\i18n\Locale;
  */
 class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,9 +40,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return 'int|float|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|float|null The default value for new elements
@@ -81,8 +76,21 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public $suffix;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function __construct($config = [])
+    {
+        // Normalize number settings
+        foreach (['defaultValue', 'min', 'max'] as $name) {
+            if (isset($config[$name]) && is_array($config[$name])) {
+                $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -120,10 +128,10 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
-        $rules[] = [['min', 'max'], 'number'];
+        $rules = parent::defineRules();
+        $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
             ['max'],
@@ -133,7 +141,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         ];
 
         if (!$this->decimals) {
-            $rules[] = [['min', 'max'], 'integer'];
+            $rules[] = [['defaultValue', 'min', 'max'], 'integer'];
         }
 
         return $rules;
@@ -232,5 +240,13 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         }
 
         return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return NumberType::getType();
     }
 }

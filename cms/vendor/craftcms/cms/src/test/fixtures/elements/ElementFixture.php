@@ -29,9 +29,6 @@ use yii\test\ActiveFixture;
  */
 abstract class ElementFixture extends ActiveFixture
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * @var array
      */
@@ -42,9 +39,6 @@ abstract class ElementFixture extends ActiveFixture
      * @since 3.3.5
      */
     public $unload = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -183,6 +177,11 @@ abstract class ElementFixture extends ActiveFixture
         $query = $modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
+            // Is this the "field:handle" syntax?
+            if (strncmp($key, 'field:', 6) === 0) {
+                $key = substr($key, 6);
+            }
+
             if ($this->isPrimaryKey($key)) {
                 $query = $query->$key(addcslashes($value, ','));
             }
@@ -190,9 +189,6 @@ abstract class ElementFixture extends ActiveFixture
 
         return $query;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * See if an element's handle is a primary key.

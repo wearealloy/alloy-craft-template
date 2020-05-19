@@ -33,9 +33,6 @@ use yii\base\InvalidConfigException;
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -156,9 +153,6 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Field ID
      */
@@ -186,6 +180,13 @@ class MatrixBlock extends Element implements BlockElementInterface
     public $sortOrder;
 
     /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 3.4.0
+     */
+    public $dirty = false;
+
+    /**
      * @var bool Collapsed
      */
     public $collapsed = false;
@@ -205,9 +206,6 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var ElementInterface[]|null
      */
     private $_eagerLoadedBlockTypeElements;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -233,9 +231,9 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -287,10 +285,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /**
-     * @inheritdoc
-     * @throws InvalidConfigException
-     */
+    /** @inheritdoc */
     public function getOwner(): ElementInterface
     {
         if ($this->_owner === null) {
@@ -461,9 +456,6 @@ class MatrixBlock extends Element implements BlockElementInterface
 
         parent::afterDelete();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the Matrix field.
