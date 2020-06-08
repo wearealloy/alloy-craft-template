@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
+class ComposerStaticInit86d0e11e410bf50406e83b20e85a0c7d
 {
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
@@ -52,7 +52,6 @@ class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
         ),
         'v' => 
         array (
-            'voku\\tests\\' => 11,
             'voku\\helper\\' => 12,
             'voku\\' => 5,
         ),
@@ -249,10 +248,6 @@ class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
         'yii2tech\\ar\\softdelete\\' => 
         array (
             0 => __DIR__ . '/..' . '/yii2tech/ar-softdelete/src',
-        ),
-        'voku\\tests\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/voku/portable-ascii/tests',
         ),
         'voku\\helper\\' => 
         array (
@@ -3423,6 +3418,7 @@ class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
         'craft\\i18n\\PhpMessageSource' => __DIR__ . '/..' . '/craftcms/cms/src/i18n/PhpMessageSource.php',
         'craft\\image\\Raster' => __DIR__ . '/..' . '/craftcms/cms/src/image/Raster.php',
         'craft\\image\\Svg' => __DIR__ . '/..' . '/craftcms/cms/src/image/Svg.php',
+        'craft\\image\\SvgAllowedAttributes' => __DIR__ . '/..' . '/craftcms/cms/src/image/SvgAllowedAttributes.php',
         'craft\\log\\FileTarget' => __DIR__ . '/..' . '/craftcms/cms/src/log/FileTarget.php',
         'craft\\mail\\Mailer' => __DIR__ . '/..' . '/craftcms/cms/src/mail/Mailer.php',
         'craft\\mail\\Message' => __DIR__ . '/..' . '/craftcms/cms/src/mail/Message.php',
@@ -3841,6 +3837,7 @@ class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
         'craft\\web\\assets\\fabric\\FabricAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/fabric/FabricAsset.php',
         'craft\\web\\assets\\feed\\FeedAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/feed/FeedAsset.php',
         'craft\\web\\assets\\fields\\FieldsAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/fields/FieldsAsset.php',
+        'craft\\web\\assets\\fieldsettings\\FieldSettingsAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/fieldsettings/FieldSettingsAsset.php',
         'craft\\web\\assets\\fileupload\\FileUploadAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/fileupload/FileUploadAsset.php',
         'craft\\web\\assets\\findreplace\\FindReplaceAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/findreplace/FindReplaceAsset.php',
         'craft\\web\\assets\\garnish\\GarnishAsset' => __DIR__ . '/..' . '/craftcms/cms/src/web/assets/garnish/GarnishAsset.php',
@@ -4606,10 +4603,10 @@ class ComposerStaticInit381b52f9f191a8da910ee3084e78032e
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit381b52f9f191a8da910ee3084e78032e::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit381b52f9f191a8da910ee3084e78032e::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit381b52f9f191a8da910ee3084e78032e::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit381b52f9f191a8da910ee3084e78032e::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit86d0e11e410bf50406e83b20e85a0c7d::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit86d0e11e410bf50406e83b20e85a0c7d::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit86d0e11e410bf50406e83b20e85a0c7d::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit86d0e11e410bf50406e83b20e85a0c7d::$classMap;
 
         }, null, ClassLoader::class);
     }

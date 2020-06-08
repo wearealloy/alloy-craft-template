@@ -1,4 +1,4 @@
-*As for 01/22/2020 this workflow is optimized to work with Craft CMS  [3.4.20] (Solo Version)
+*As for 01/22/2020 this workflow is optimized to work with Craft CMS  [3.4.22] (Solo Version)
 If there happens to be a change in craft cms folder structure, the gulpfile.js would have to be updated.*
 
 ---
