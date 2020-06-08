@@ -1,1 +1,0 @@
-*All pictures that the client has access to through the cms go here*
